@@ -6,9 +6,9 @@ import (
 	"log"
 	"time"
 
+	"github.com/AndreasAbdi/go-castv2"
+	"github.com/AndreasAbdi/go-castv2/api"
 	"github.com/davecgh/go-spew/spew"
-	"github.com/ninjasphere/go-castv2"
-	"github.com/ninjasphere/go-castv2/api"
 )
 
 type ReceiverController struct {

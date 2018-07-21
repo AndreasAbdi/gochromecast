@@ -8,4 +8,4 @@ Ported from [node-castv2](https://github.com/thibauts/node-castv2) and [node-cas
 
 ### Examples
 
-For examples of how to use it, see https://github.com/ninjasphere/driver-go-chromecast/blob/master/device.go
+For examples of how to use it, see https://github.com/AndreasAbdi/driver-go-chromecast/blob/master/device.go
