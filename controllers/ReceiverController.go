@@ -17,15 +17,13 @@ type ReceiverController struct {
 	Incoming chan *ReceiverStatus
 }
 
-var getStatus = castv2.PayloadHeaders{Type: "GET_STATUS"}
-
 func NewReceiverController(client *castv2.Client, sourceId, destinationId string) *ReceiverController {
 	controller := &ReceiverController{
 		channel:  client.NewChannel(sourceId, destinationId, receiverControllerNamespace),
 		Incoming: make(chan *ReceiverStatus, 0),
 	}
 
-	controller.channel.OnMessage("RECEIVER_STATUS", controller.onStatus)
+	controller.channel.OnMessage(receiverControllerSystemEventReceiverStatus, controller.onStatus)
 
 	return controller
 }
@@ -65,7 +63,7 @@ func (s *ReceiverStatus) GetSessionByNamespace(namespace string) *ApplicationSes
 }
 
 func (c *ReceiverController) GetStatus(timeout time.Duration) (*ReceiverStatus, error) {
-	message, err := c.channel.Request(&getStatus, timeout)
+	message, err := c.channel.Request(&castv2.PayloadHeaders{Type: receiverControllerSystemEventGetStatus}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get receiver status: %s", err)
 	}
@@ -84,7 +82,7 @@ func (c *ReceiverController) GetStatus(timeout time.Duration) (*ReceiverStatus, 
 
 func (c *ReceiverController) SetVolume(volume *Volume, timeout time.Duration) (*api.CastMessage, error) {
 	return c.channel.Request(&ReceiverStatus{
-		PayloadHeaders: castv2.PayloadHeaders{Type: "SET_VOLUME"},
+		PayloadHeaders: castv2.PayloadHeaders{Type: receiverControllerSystemEventSetVolume},
 		Volume:         volume,
 	}, timeout)
 }
