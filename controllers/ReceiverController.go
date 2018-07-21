@@ -11,15 +11,17 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+//ReceiverController is a chromecast controller for the receiver namespace. This involves
 type ReceiverController struct {
 	interval time.Duration
 	channel  *castv2.Channel
 	Incoming chan *ReceiverStatus
 }
 
-func NewReceiverController(client *castv2.Client, sourceId, destinationId string) *ReceiverController {
+//NewReceiverController is for building a new receiver controller
+func NewReceiverController(client *castv2.Client, sourceID, destinationID string) *ReceiverController {
 	controller := &ReceiverController{
-		channel:  client.NewChannel(sourceId, destinationId, receiverControllerNamespace),
+		channel:  client.NewChannel(sourceID, destinationID, receiverControllerNamespace),
 		Incoming: make(chan *ReceiverStatus, 0),
 	}
 
@@ -49,6 +51,7 @@ func (c *ReceiverController) onStatus(message *api.CastMessage) {
 
 }
 
+//GetSessionByNamespace attempts to return the first session with a specified namespace.
 func (s *ReceiverStatus) GetSessionByNamespace(namespace string) *ApplicationSession {
 
 	for _, app := range s.Applications {
@@ -62,6 +65,7 @@ func (s *ReceiverStatus) GetSessionByNamespace(namespace string) *ApplicationSes
 	return nil
 }
 
+//GetStatus attempts to receive the current status of the controllers chromecast device.
 func (c *ReceiverController) GetStatus(timeout time.Duration) (*ReceiverStatus, error) {
 	message, err := c.channel.Request(&castv2.PayloadHeaders{Type: receiverControllerSystemEventGetStatus}, timeout)
 	if err != nil {
@@ -80,6 +84,7 @@ func (c *ReceiverController) GetStatus(timeout time.Duration) (*ReceiverStatus, 
 	return response.Status, nil
 }
 
+//SetVolume sets the volume on the controller's chromecast.
 func (c *ReceiverController) SetVolume(volume *Volume, timeout time.Duration) (*api.CastMessage, error) {
 	return c.channel.Request(&ReceiverStatus{
 		PayloadHeaders: castv2.PayloadHeaders{Type: receiverControllerSystemEventSetVolume},
@@ -87,6 +92,7 @@ func (c *ReceiverController) SetVolume(volume *Volume, timeout time.Duration) (*
 	}, timeout)
 }
 
+//GetVolume gets the volume on the controller's chromecast.
 func (c *ReceiverController) GetVolume(timeout time.Duration) (*Volume, error) {
 	status, err := c.GetStatus(timeout)
 
