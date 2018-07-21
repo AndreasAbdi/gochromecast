@@ -21,7 +21,7 @@ var getStatus = castv2.PayloadHeaders{Type: "GET_STATUS"}
 
 func NewReceiverController(client *castv2.Client, sourceId, destinationId string) *ReceiverController {
 	controller := &ReceiverController{
-		channel:  client.NewChannel(sourceId, destinationId, "urn:x-cast:com.google.cast.receiver"),
+		channel:  client.NewChannel(sourceId, destinationId, receiverControllerNamespace),
 		Incoming: make(chan *ReceiverStatus, 0),
 	}
 
@@ -51,17 +51,6 @@ func (c *ReceiverController) onStatus(message *api.CastMessage) {
 
 }
 
-type StatusResponse struct {
-	castv2.PayloadHeaders
-	Status *ReceiverStatus `json:"status,omitempty"`
-}
-
-type ReceiverStatus struct {
-	castv2.PayloadHeaders
-	Applications []*ApplicationSession `json:"applications"`
-	Volume       *Volume               `json:"volume,omitempty"`
-}
-
 func (s *ReceiverStatus) GetSessionByNamespace(namespace string) *ApplicationSession {
 
 	for _, app := range s.Applications {
@@ -73,24 +62,6 @@ func (s *ReceiverStatus) GetSessionByNamespace(namespace string) *ApplicationSes
 	}
 
 	return nil
-}
-
-type ApplicationSession struct {
-	AppID       *string      `json:"appId,omitempty"`
-	DisplayName *string      `json:"displayName,omitempty"`
-	Namespaces  []*Namespace `json:"namespaces"`
-	SessionID   *string      `json:"sessionId,omitempty"`
-	StatusText  *string      `json:"statusText,omitempty"`
-	TransportId *string      `json:"transportId,omitempty"`
-}
-
-type Namespace struct {
-	Name string `json:"name"`
-}
-
-type Volume struct {
-	Level *float64 `json:"level,omitempty"`
-	Muted *bool    `json:"muted,omitempty"`
 }
 
 func (c *ReceiverController) GetStatus(timeout time.Duration) (*ReceiverStatus, error) {
