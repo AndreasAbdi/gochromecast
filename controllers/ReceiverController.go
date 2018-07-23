@@ -13,9 +13,10 @@ import (
 
 //ReceiverController is a chromecast controller for the receiver namespace. This involves
 type ReceiverController struct {
-	interval time.Duration
-	channel  *castv2.Channel
-	Incoming chan *ReceiverStatus
+	interval           time.Duration
+	currentApplication string
+	channel            *castv2.Channel
+	Incoming           chan *ReceiverStatus
 }
 
 //NewReceiverController is for building a new receiver controller
@@ -82,6 +83,19 @@ func (c *ReceiverController) GetStatus(timeout time.Duration) (*ReceiverStatus, 
 	}
 
 	return response.Status, nil
+}
+
+/*
+LaunchApplication attempts to launch an application on the chromecast.
+forceLaunch forces the app to run even if something is already running.
+*/
+func (c *ReceiverController) LaunchApplication(appID *string, timeout time.Duration, forceLaunch bool) {
+	//TODO: test out force launch and actually write it.
+	log.Printf("Attempting to launch an application: %s\n", *appID)
+	c.channel.Request(&LaunchRequest{
+		PayloadHeaders: castv2.PayloadHeaders{Type: receiverControllerSystemEventLaunch},
+		AppID:          appID,
+	}, timeout)
 }
 
 //SetVolume sets the volume on the controller's chromecast.

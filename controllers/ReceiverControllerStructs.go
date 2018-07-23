@@ -30,3 +30,8 @@ type ReceiverStatus struct {
 	Applications []*ApplicationSession `json:"applications"`
 	Volume       *Volume               `json:"volume,omitempty"`
 }
+
+type LaunchRequest struct {
+	castv2.PayloadHeaders
+	AppID *string `json:"appId,omitempty"`
+}
