@@ -46,6 +46,12 @@ func (c *ReceiverController) onStatus(message *api.CastMessage) {
 	select {
 	case c.Incoming <- response.Status:
 		log.Printf("Delivered status")
+		/*
+			pychromecast presumes the first application in the applications list is the one running.
+			Honestly don't know how to run multiple applications so would be hard for me to test.
+		*/
+		appData := response.Status.Applications[0]
+		c.currentApplication = *appData.AppID
 	case <-time.After(time.Second):
 		log.Printf("Incoming status, but we aren't listening. %v", response.Status)
 	}
@@ -95,6 +101,16 @@ func (c *ReceiverController) LaunchApplication(appID *string, timeout time.Durat
 	c.channel.Request(&LaunchRequest{
 		PayloadHeaders: castv2.PayloadHeaders{Type: receiverControllerSystemEventLaunch},
 		AppID:          appID,
+	}, timeout)
+}
+
+//TODO: so application termination requires sessionID, need to figure out how to rewrite code to work with that.
+//Actually, you know what? we could do it so that there is a wrapper that sends requests to these thingies.
+func (c *ReceiverController) StopApplication(sessionID *string, timeout time.Duration) {
+	log.Println("Attempting to stop the current application")
+	c.channel.Request(&StopRequest{
+		PayloadHeaders: castv2.PayloadHeaders{Type: receiverControllerSystemEventStop},
+		sessionID:      sessionID,
 	}, timeout)
 }
 

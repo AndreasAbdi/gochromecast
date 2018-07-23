@@ -2,6 +2,8 @@ package controllers
 
 import castv2 "github.com/AndreasAbdi/go-castv2"
 
+//TODO: figure out which one of these we need to be public. receiverstatus and application session definitely.
+
 type ApplicationSession struct {
 	AppID       *string      `json:"appId,omitempty"`
 	DisplayName *string      `json:"displayName,omitempty"`
@@ -34,4 +36,9 @@ type ReceiverStatus struct {
 type LaunchRequest struct {
 	castv2.PayloadHeaders
 	AppID *string `json:"appId,omitempty"`
+}
+
+type StopRequest struct {
+	castv2.PayloadHeaders
+	sessionID *string `json:"sessionID,omitempty"`
 }
