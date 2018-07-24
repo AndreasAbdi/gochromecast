@@ -110,7 +110,7 @@ func (c *ReceiverController) StopApplication(sessionID *string, timeout time.Dur
 	log.Println("Attempting to stop the current application")
 	c.channel.Request(&StopRequest{
 		PayloadHeaders: castv2.PayloadHeaders{Type: receiverControllerSystemEventStop},
-		sessionID:      sessionID,
+		SessionID:      sessionID,
 	}, timeout)
 }
 

@@ -24,15 +24,11 @@ var getMediaStatus = castv2.PayloadHeaders{Type: "GET_STATUS"}
 var commandMediaPlay = castv2.PayloadHeaders{Type: "PLAY"}
 var commandMediaPause = castv2.PayloadHeaders{Type: "PAUSE"}
 var commandMediaStop = castv2.PayloadHeaders{Type: "STOP"}
-
-type MediaCommand struct {
-	castv2.PayloadHeaders
-	MediaSessionID int `json:"mediaSessionId"`
-}
+var commandMediaLoad = castv2.PayloadHeaders{Type: "LOAD"}
 
 func NewMediaController(client *castv2.Client, sourceId, destinationID string) *MediaController {
 	controller := &MediaController{
-		channel:       client.NewChannel(sourceId, destinationID, "urn:x-cast:com.google.cast.media"),
+		channel:       client.NewChannel(sourceId, destinationID, mediaControllerNamespace),
 		Incoming:      make(chan []*MediaStatus, 0),
 		DestinationID: destinationID,
 	}
@@ -69,23 +65,6 @@ func (c *MediaController) onStatus(message *api.CastMessage) ([]*MediaStatus, er
 	return response.Status, nil
 }
 
-type MediaStatusResponse struct {
-	castv2.PayloadHeaders
-	Status []*MediaStatus `json:"status,omitempty"`
-}
-
-type MediaStatus struct {
-	castv2.PayloadHeaders
-	MediaSessionID         int                    `json:"mediaSessionId"`
-	PlaybackRate           float64                `json:"playbackRate"`
-	PlayerState            string                 `json:"playerState"`
-	CurrentTime            float64                `json:"currentTime"`
-	SupportedMediaCommands int                    `json:"supportedMediaCommands"`
-	Volume                 *Volume                `json:"volume,omitempty"`
-	CustomData             map[string]interface{} `json:"customData"`
-	IdleReason             string                 `json:"idleReason"`
-}
-
 func (c *MediaController) GetStatus(timeout time.Duration) ([]*MediaStatus, error) {
 
 	spew.Dump("getting media Status")
@@ -98,6 +77,20 @@ func (c *MediaController) GetStatus(timeout time.Duration) ([]*MediaStatus, erro
 	spew.Dump("got media Status", message)
 
 	return c.onStatus(message)
+}
+
+//TODO
+func (c *MediaController) Load(url string, contentType string, timeout time.Duration) (*api.CastMessage, error) {
+	//TODO should do something about messaging with the request type so we can attach more metadata
+	//TODO also should be sending a message of type media data( should probably actually construct the request)
+	message, err := c.channel.Request(&MediaData{
+		commandMediaLoad,
+	}, timeout)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to send play command: %s", err)
+	}
+
+	return message, nil
 }
 
 func (c *MediaController) Play(timeout time.Duration) (*api.CastMessage, error) {
@@ -128,4 +121,14 @@ func (c *MediaController) Stop(timeout time.Duration) (*api.CastMessage, error) 
 	}
 
 	return message, nil
+}
+
+//TODO
+func (c *MediaController) EnableSubtitles(timeout time.Duration) (*api.CastMessage, error) {
+	return nil, nil
+}
+
+//TODO
+func (c *MediaController) DisableSubtitles(timeout time.Duration) (*api.CastMessage, error) {
+	return nil, nil
 }

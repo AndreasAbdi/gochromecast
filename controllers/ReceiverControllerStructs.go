@@ -40,5 +40,5 @@ type LaunchRequest struct {
 
 type StopRequest struct {
 	castv2.PayloadHeaders
-	sessionID *string `json:"sessionID,omitempty"`
+	SessionID *string `json:"sessionID,omitempty"`
 }
