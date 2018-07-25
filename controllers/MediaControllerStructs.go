@@ -12,22 +12,21 @@ type MediaStatusResponse struct {
 	Status []*MediaStatus `json:"status,omitempty"`
 }
 
+//Generic enum type for media data
+
 //MediaData is data format for message to send to chromecast to play a (vid/image/tvshow/music video/etc) via generic media player.
 //https://developers.google.com/cast/docs/reference/messages#MediaData is the general info.
 type MediaData struct {
 	castv2.PayloadHeaders
-	URL               string
-	ContentType       string
-	Title             string
-	ThumbnailURL      string
-	CurrentTime       float64
-	AutoPlay          bool
-	StreamType        string
-	Subtitles         string
-	SubtitlesLanguage string
-	SubtitlesMIME     string
-	subtitlesID       int
-	Metadata          map[string]interface{}
+	//ContentID is the identifier for the content to be loaded by the current receiver application in the chromecast.
+	//Usually this is just the URL.
+	//ContentType is the MIME type of the media
+	ContentID   string                 `json:"contentId"`
+	ContentType string                 `json:"contentType"` //data MIME
+	StreamType  string                 `json:"streamType"`  // (NONE, BUFFERED, or LIVE)
+	duration    float64                `json:"duration,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata,omitempty"` //stores a mediadata
+	CustomData  map[string]interface{} `json:"customData,omitempty"`
 }
 
 type StandardMediaMetadata struct {

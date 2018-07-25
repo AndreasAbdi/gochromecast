@@ -85,6 +85,7 @@ func (c *MediaController) Load(url string, contentType string, timeout time.Dura
 	//TODO also should be sending a message of type media data( should probably actually construct the request)
 	message, err := c.channel.Request(&MediaData{
 		commandMediaLoad,
+		url,
 	}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send play command: %s", err)
