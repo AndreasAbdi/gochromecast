@@ -4,17 +4,35 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/api"
 )
+
+type requestIDCounter struct {
+	requestID int
+	mutex     sync.Mutex
+}
+
+func (counter *requestIDCounter) increment() {
+	counter.mutex.Lock()
+	defer counter.mutex.Unlock()
+	counter.requestID++
+}
+
+func (counter *requestIDCounter) get() int {
+	counter.mutex.Lock()
+	defer counter.mutex.Unlock()
+	return counter.requestID
+}
 
 type Channel struct {
 	client        *Client
 	sourceId      string
 	DestinationId string
 	namespace     string
-	requestId     int
+	counter       requestIDCounter
 	inFlight      map[int]chan *api.CastMessage
 	listeners     []channelListener
 }
@@ -87,10 +105,9 @@ func (c *Channel) Send(payload interface{}) error {
 
 func (c *Channel) Request(payload hasRequestId, timeout time.Duration) (*api.CastMessage, error) {
 
-	// TODO: Need locking here
-	c.requestId++
+	c.counter.increment()
 
-	payload.setRequestId(c.requestId)
+	payload.setRequestId(c.counter.get())
 
 	response := make(chan *api.CastMessage)
 
