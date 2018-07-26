@@ -83,9 +83,19 @@ func (c *MediaController) GetStatus(timeout time.Duration) ([]*MediaStatus, erro
 func (c *MediaController) Load(url string, contentType string, timeout time.Duration) (*api.CastMessage, error) {
 	//TODO should do something about messaging with the request type so we can attach more metadata
 	//TODO also should be sending a message of type media data( should probably actually construct the request)
-	message, err := c.channel.Request(&MediaData{
+	builder := GenericMediaDataBuilder{}
+	builder.SetContentID(url)
+	builder.SetContentType(contentType)
+	mediaData, err := builder.Build()
+	if err != nil {
+		return nil, err
+	}
+	message, err := c.channel.Request(&LoadCommand{
 		commandMediaLoad,
-		url,
+		mediaData,
+		true,
+		0,
+		nil,
 	}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send play command: %s", err)
