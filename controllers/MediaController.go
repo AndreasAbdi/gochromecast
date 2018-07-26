@@ -11,6 +11,11 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+/*
+MediaController is a type of chromecast controller.
+Use it to load, play, pause, stop media.
+Use it to enable or disable subtitles.
+*/
 type MediaController struct {
 	interval       time.Duration
 	channel        *castv2.Channel
@@ -26,9 +31,10 @@ var commandMediaPause = castv2.PayloadHeaders{Type: "PAUSE"}
 var commandMediaStop = castv2.PayloadHeaders{Type: "STOP"}
 var commandMediaLoad = castv2.PayloadHeaders{Type: "LOAD"}
 
-func NewMediaController(client *castv2.Client, sourceId, destinationID string) *MediaController {
+//NewMediaController is the constructors for the media controller
+func NewMediaController(client *castv2.Client, sourceID, destinationID string) *MediaController {
 	controller := &MediaController{
-		channel:       client.NewChannel(sourceId, destinationID, mediaControllerNamespace),
+		channel:       client.NewChannel(sourceID, destinationID, mediaControllerNamespace),
 		Incoming:      make(chan []*MediaStatus, 0),
 		DestinationID: destinationID,
 	}
@@ -40,6 +46,7 @@ func NewMediaController(client *castv2.Client, sourceId, destinationID string) *
 	return controller
 }
 
+//SetDestinationID sets the target destination for the media controller
 func (c *MediaController) SetDestinationID(id string) {
 	c.channel.DestinationId = id
 	c.DestinationID = id
@@ -65,6 +72,7 @@ func (c *MediaController) onStatus(message *api.CastMessage) ([]*MediaStatus, er
 	return response.Status, nil
 }
 
+//GetStatus attempts to request the chromecast return the status of the current media controller channel
 func (c *MediaController) GetStatus(timeout time.Duration) ([]*MediaStatus, error) {
 
 	spew.Dump("getting media Status")
@@ -80,6 +88,7 @@ func (c *MediaController) GetStatus(timeout time.Duration) ([]*MediaStatus, erro
 }
 
 //TODO
+//Load sends a load request to play a generic media event
 func (c *MediaController) Load(url string, contentType string, timeout time.Duration) (*api.CastMessage, error) {
 	//TODO should do something about messaging with the request type so we can attach more metadata
 	//TODO also should be sending a message of type media data( should probably actually construct the request)
@@ -104,6 +113,7 @@ func (c *MediaController) Load(url string, contentType string, timeout time.Dura
 	return message, nil
 }
 
+//Play sends the play command so that the chromecast session is resumed
 func (c *MediaController) Play(timeout time.Duration) (*api.CastMessage, error) {
 
 	message, err := c.channel.Request(&MediaCommand{commandMediaPlay, c.MediaSessionID}, timeout)
@@ -114,6 +124,7 @@ func (c *MediaController) Play(timeout time.Duration) (*api.CastMessage, error) 
 	return message, nil
 }
 
+//Pause sends the pause command to the chromecast
 func (c *MediaController) Pause(timeout time.Duration) (*api.CastMessage, error) {
 
 	message, err := c.channel.Request(&MediaCommand{commandMediaPause, c.MediaSessionID}, timeout)
@@ -124,6 +135,7 @@ func (c *MediaController) Pause(timeout time.Duration) (*api.CastMessage, error)
 	return message, nil
 }
 
+//Stop sends the stop command to the chromecast
 func (c *MediaController) Stop(timeout time.Duration) (*api.CastMessage, error) {
 
 	message, err := c.channel.Request(&MediaCommand{commandMediaStop, c.MediaSessionID}, timeout)
@@ -135,11 +147,13 @@ func (c *MediaController) Stop(timeout time.Duration) (*api.CastMessage, error) 
 }
 
 //TODO
+//EnableSubtitles sends the enable subtitles command to the chromecast
 func (c *MediaController) EnableSubtitles(timeout time.Duration) (*api.CastMessage, error) {
 	return nil, nil
 }
 
 //TODO
+//DisableSubtitles sends the disable subtitles command to the chromecast
 func (c *MediaController) DisableSubtitles(timeout time.Duration) (*api.CastMessage, error) {
 	return nil, nil
 }
