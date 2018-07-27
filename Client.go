@@ -50,9 +50,6 @@ func NewClient(host net.IP, port int) (*Client, error) {
 		channels: make([]*Channel, 0),
 	}
 
-	/*connection := client.NewChannel("sender-0", "receiver-0", "urn:x-cast:com.google.cast.tp.connection")
-	connection.Send(&PayloadHeaders{Type: "CONNECT"})*/
-
 	go func() {
 		for {
 			packet := wrapper.Read()
@@ -62,8 +59,6 @@ func NewClient(host net.IP, port int) (*Client, error) {
 			if err != nil {
 				log.Fatalf("Failed to unmarshal CastMessage: %s", err)
 			}
-
-			//spew.Dump("Message!", message)
 
 			var headers PayloadHeaders
 
@@ -79,16 +74,6 @@ func NewClient(host net.IP, port int) (*Client, error) {
 
 		}
 	}()
-
-	/*go func() {
-
-		heartbeat := client.NewChannel("sender-0", "receiver-0", "urn:x-cast:com.google.cast.tp.heartbeat")
-		ping := PayloadHeaders{Type: "PING"}
-		for {
-			time.Sleep(5 * time.Second)
-			heartbeat.Send(&ping)
-		}
-	}()*/
 
 	return client, nil
 }
@@ -120,8 +105,6 @@ func (c *Client) Send(message *api.CastMessage) error {
 	if err != nil {
 		return err
 	}
-
-	//spew.Dump("Writing", message)
 
 	_, err = c.conn.Write(&data)
 
