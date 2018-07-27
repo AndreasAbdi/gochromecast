@@ -10,10 +10,11 @@ import (
 	"github.com/AndreasAbdi/go-castv2/generic"
 )
 
+//Channel is an abstraction over a chromecast channel.
 type Channel struct {
 	client        *Client
-	sourceId      string
-	DestinationId string
+	sourceID      string
+	DestinationID string
 	namespace     string
 	counter       generic.Counter
 	inFlight      map[int]chan *api.CastMessage
@@ -25,9 +26,9 @@ type channelListener struct {
 	callback     func(*api.CastMessage)
 }
 
-type hasRequestId interface {
-	setRequestId(id int)
-	getRequestId() int
+type hasRequestID interface {
+	setRequestID(id int)
+	getRequestID() int
 }
 
 /*
@@ -40,21 +41,21 @@ type hasRequestId interface {
 	5. Request method returns the unmarshalled chromecast event if it worked, timeout if it didn't receive the event in time.
 */
 
-//Processes message that has been received by the packetstream in the client.
-func (c *Channel) message(message *api.CastMessage, headers *PayloadHeaders) {
+//Processes message and sends it to waiting channels in inflight chans array and call listener callbacks with defined requestID.
+func (c *Channel) receiveMessage(message *api.CastMessage, headers *PayloadHeaders) {
 
-	if *message.DestinationId != "*" && (*message.SourceId != c.DestinationId || *message.DestinationId != c.sourceId || *message.Namespace != c.namespace) {
+	if *message.DestinationId != "*" && (*message.SourceId != c.DestinationID || *message.DestinationId != c.sourceID || *message.Namespace != c.namespace) {
 		return
 	}
 
-	if *message.DestinationId != "*" && headers.RequestId != nil {
-		listener, ok := c.inFlight[*headers.RequestId]
+	if *message.DestinationId != "*" && headers.RequestID != nil {
+		listener, ok := c.inFlight[*headers.RequestID]
 		if !ok {
-			log.Printf("Warning: Unknown incoming response id: %d to destination:%s", *headers.RequestId, c.DestinationId)
+			log.Printf("Warning: Unknown incoming response id: %d to destination:%s", *headers.RequestID, c.DestinationID)
 			return
 		}
 		listener <- message
-		delete(c.inFlight, *headers.RequestId)
+		delete(c.inFlight, *headers.RequestID)
 		return
 	}
 
@@ -81,16 +82,16 @@ Send creates a simple message to be sent by the client.
 */
 func (c *Channel) Send(payload interface{}) error {
 
-	payloadJson, err := json.Marshal(payload)
+	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
-	payloadString := string(payloadJson)
+	payloadString := string(payloadJSON)
 
 	message := &api.CastMessage{
 		ProtocolVersion: api.CastMessage_CASTV2_1_0.Enum(),
-		SourceId:        &c.sourceId,
-		DestinationId:   &c.DestinationId,
+		SourceId:        &c.sourceID,
+		DestinationId:   &c.DestinationID,
 		Namespace:       &c.namespace,
 		PayloadType:     api.CastMessage_STRING.Enum(),
 		PayloadUtf8:     &payloadString,
@@ -103,18 +104,18 @@ func (c *Channel) Send(payload interface{}) error {
 Request sends a payload and returns the message the chromecast gives back.
 Throws an error if timeout has passed waiting for the message to be returned.
 */
-func (c *Channel) Request(payload hasRequestId, timeout time.Duration) (*api.CastMessage, error) {
+func (c *Channel) Request(payload hasRequestID, timeout time.Duration) (*api.CastMessage, error) {
 
-	payload.setRequestId(c.counter.IncrementAndGet())
+	payload.setRequestID(c.counter.IncrementAndGet())
 
 	response := make(chan *api.CastMessage)
 
-	c.inFlight[payload.getRequestId()] = response
+	c.inFlight[payload.getRequestID()] = response
 
 	err := c.Send(payload)
 
 	if err != nil {
-		delete(c.inFlight, payload.getRequestId())
+		delete(c.inFlight, payload.getRequestID())
 		return nil, err
 	}
 
@@ -122,8 +123,8 @@ func (c *Channel) Request(payload hasRequestId, timeout time.Duration) (*api.Cas
 	case reply := <-response:
 		return reply, nil
 	case <-time.After(timeout):
-		delete(c.inFlight, payload.getRequestId())
-		return nil, fmt.Errorf("Call to cast channel %s - timed out after %d seconds", c.DestinationId, timeout/time.Second)
+		delete(c.inFlight, payload.getRequestID())
+		return nil, fmt.Errorf("Call to cast channel %s - timed out after %d seconds", c.DestinationID, timeout/time.Second)
 	}
 
 }

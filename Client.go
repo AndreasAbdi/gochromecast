@@ -19,15 +19,15 @@ type Client struct {
 
 type PayloadHeaders struct {
 	Type      string `json:"type"`
-	RequestId *int   `json:"requestId,omitempty"`
+	RequestID *int   `json:"requestID,omitempty"`
 }
 
-func (h *PayloadHeaders) setRequestId(id int) {
-	h.RequestId = &id
+func (h *PayloadHeaders) setRequestID(id int) {
+	h.RequestID = &id
 }
 
-func (h *PayloadHeaders) getRequestId() int {
-	return *h.RequestId
+func (h *PayloadHeaders) getRequestID() int {
+	return *h.RequestID
 }
 
 func NewClient(host net.IP, port int) (*Client, error) {
@@ -69,7 +69,7 @@ func NewClient(host net.IP, port int) (*Client, error) {
 			}
 
 			for _, channel := range client.channels {
-				channel.message(message, &headers)
+				channel.receiveMessage(message, &headers)
 			}
 
 		}
@@ -82,11 +82,11 @@ func (c *Client) Close() {
 	c.realConn.Close()
 }
 
-func (c *Client) NewChannel(sourceId, destinationId, namespace string) *Channel {
+func (c *Client) NewChannel(sourceID, destinationID, namespace string) *Channel {
 	channel := &Channel{
 		client:        c,
-		sourceId:      sourceId,
-		DestinationId: destinationId,
+		sourceID:      sourceID,
+		DestinationID: destinationID,
 		namespace:     namespace,
 		listeners:     make([]channelListener, 0),
 		inFlight:      make(map[int]chan *api.CastMessage),
