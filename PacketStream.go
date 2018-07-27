@@ -6,18 +6,21 @@ import (
 	"log"
 )
 
+//packetStream is a wrapper for a socket connection for easier uses.
 type packetStream struct {
 	stream  io.ReadWriteCloser
 	packets chan *[]byte
 }
 
-func NewPacketStream(stream io.ReadWriteCloser) *packetStream {
+//newPacketStream is the constructor.
+func newPacketStream(stream io.ReadWriteCloser) *packetStream {
 	wrapper := packetStream{stream, make(chan *[]byte)}
 	wrapper.readPackets()
 
 	return &wrapper
 }
 
+//Continually processes events from the stream.
 func (w *packetStream) readPackets() {
 	var length uint32
 
@@ -50,11 +53,12 @@ func (w *packetStream) readPackets() {
 	}()
 }
 
-func (w *packetStream) Read() *[]byte {
+func (w *packetStream) read() *[]byte {
 	return <-w.packets
 }
 
-func (w *packetStream) Write(data *[]byte) (int, error) {
+//Sends events to the stream to be reader.
+func (w *packetStream) write(data *[]byte) (int, error) {
 
 	err := binary.Write(w.stream, binary.BigEndian, uint32(len(*data)))
 

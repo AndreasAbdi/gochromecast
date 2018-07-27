@@ -11,12 +11,14 @@ import (
 	"github.com/gogo/protobuf/proto"
 )
 
+//Client is a basic connector to the chromecast event stream.
 type Client struct {
 	realConn *tls.Conn
 	conn     *packetStream
 	channels []*Channel
 }
 
+//PayloadHeaders are general request components for any message to be passed to a chromecast.
 type PayloadHeaders struct {
 	Type      string `json:"type"`
 	RequestID *int   `json:"requestID,omitempty"`
@@ -30,6 +32,7 @@ func (h *PayloadHeaders) getRequestID() int {
 	return *h.RequestID
 }
 
+//NewClient is a constructor for a Client object. Host and Port are for the chromecast's network info.
 func NewClient(host net.IP, port int) (*Client, error) {
 
 	log.Printf("connecting to %s:%d ...", host, port)
@@ -42,7 +45,7 @@ func NewClient(host net.IP, port int) (*Client, error) {
 		return nil, fmt.Errorf("Failed to connect to Chromecast. Error:%s", err)
 	}
 
-	wrapper := NewPacketStream(conn)
+	wrapper := newPacketStream(conn)
 
 	client := &Client{
 		realConn: conn,
@@ -52,7 +55,7 @@ func NewClient(host net.IP, port int) (*Client, error) {
 
 	go func() {
 		for {
-			packet := wrapper.Read()
+			packet := wrapper.read()
 
 			message := &api.CastMessage{}
 			err = proto.Unmarshal(*packet, message)
@@ -78,10 +81,15 @@ func NewClient(host net.IP, port int) (*Client, error) {
 	return client, nil
 }
 
+//Close closes the real socket connection that the client has to the chromecast.
 func (c *Client) Close() {
 	c.realConn.Close()
 }
 
+/*
+NewChannel constructs a communication channel towards a chromecast device with a specified namespace.
+namespace are those namespaces that are specified by the chromecast API.
+*/
 func (c *Client) NewChannel(sourceID, destinationID, namespace string) *Channel {
 	channel := &Channel{
 		client:        c,
@@ -97,6 +105,7 @@ func (c *Client) NewChannel(sourceID, destinationID, namespace string) *Channel 
 	return channel
 }
 
+//Send sends a message to the chromecast using the actual socket connection.
 func (c *Client) Send(message *api.CastMessage) error {
 
 	proto.SetDefaults(message)
@@ -106,7 +115,7 @@ func (c *Client) Send(message *api.CastMessage) error {
 		return err
 	}
 
-	_, err = c.conn.Write(&data)
+	_, err = c.conn.write(&data)
 
 	return err
 
