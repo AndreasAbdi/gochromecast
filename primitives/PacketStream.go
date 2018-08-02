@@ -1,4 +1,4 @@
-package castv2
+package primitives
 
 import (
 	"encoding/binary"

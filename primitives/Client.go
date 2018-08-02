@@ -1,4 +1,4 @@
-package castv2
+package primitives
 
 import (
 	"crypto/tls"
@@ -16,20 +16,6 @@ type Client struct {
 	realConn *tls.Conn
 	conn     *packetStream
 	channels []*Channel
-}
-
-//PayloadHeaders are general request components for any message to be passed to a chromecast.
-type PayloadHeaders struct {
-	Type      string `json:"type"`
-	RequestID *int   `json:"requestID,omitempty"`
-}
-
-func (h *PayloadHeaders) setRequestID(id int) {
-	h.RequestID = &id
-}
-
-func (h *PayloadHeaders) getRequestID() int {
-	return *h.RequestID
 }
 
 //NewClient is a constructor for a Client object. Host and Port are for the chromecast's network info.
