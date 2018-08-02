@@ -8,6 +8,8 @@ const receiverControllerNamespace string = "urn:x-cast:com.google.cast.receiver"
 const mediaControllerNamespace string = "urn:x-cast:com.google.cast.media"
 const heartbeatControllerNamespace string = "urn:x-cast:com.google.cast.tp.heartbeat"
 const connectionControllerNamespace string = "urn:x-cast:com.google.cast.tp.connection"
+const dashcastControllerNamespace string = "urn:x-cast:com.madmod.dashcast"
+const youtubeControllerNamespace string = "urn:x-cast:com.google.youtube.mdx"
 
 //TODO: Consider if the better name would be like system event blah. (systemeventgetstatus, or systemeventclose)
 const receiverControllerSystemEventGetStatus string = "GET_STATUS"
