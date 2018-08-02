@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/AndreasAbdi/go-castv2"
 	"github.com/AndreasAbdi/go-castv2/api"
+	"github.com/AndreasAbdi/go-castv2/primitives"
 	"github.com/davecgh/go-spew/spew"
 )
 
@@ -15,12 +15,12 @@ import (
 type ReceiverController struct {
 	interval           time.Duration
 	currentApplication string
-	channel            *castv2.Channel
+	channel            *primitives.Channel
 	Incoming           chan *ReceiverStatus
 }
 
 //NewReceiverController is for building a new receiver controller
-func NewReceiverController(client *castv2.Client, sourceID, destinationID string) *ReceiverController {
+func NewReceiverController(client *primitives.Client, sourceID, destinationID string) *ReceiverController {
 	controller := &ReceiverController{
 		channel:  client.NewChannel(sourceID, destinationID, receiverControllerNamespace),
 		Incoming: make(chan *ReceiverStatus, 0),
@@ -74,7 +74,7 @@ func (s *ReceiverStatus) GetSessionByNamespace(namespace string) *ApplicationSes
 
 //GetStatus attempts to receive the current status of the controllers chromecast device.
 func (c *ReceiverController) GetStatus(timeout time.Duration) (*ReceiverStatus, error) {
-	message, err := c.channel.Request(&castv2.PayloadHeaders{Type: receiverControllerSystemEventGetStatus}, timeout)
+	message, err := c.channel.Request(&primitives.PayloadHeaders{Type: receiverControllerSystemEventGetStatus}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get receiver status: %s", err)
 	}
@@ -99,7 +99,7 @@ func (c *ReceiverController) LaunchApplication(appID *string, timeout time.Durat
 	//TODO: test out force launch and actually write it.
 	log.Printf("Attempting to launch an application: %s\n", *appID)
 	c.channel.Request(&LaunchRequest{
-		PayloadHeaders: castv2.PayloadHeaders{Type: receiverControllerSystemEventLaunch},
+		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventLaunch},
 		AppID:          appID,
 	}, timeout)
 }
@@ -109,7 +109,7 @@ func (c *ReceiverController) LaunchApplication(appID *string, timeout time.Durat
 func (c *ReceiverController) StopApplication(sessionID *string, timeout time.Duration) {
 	log.Println("Attempting to stop the current application")
 	c.channel.Request(&StopRequest{
-		PayloadHeaders: castv2.PayloadHeaders{Type: receiverControllerSystemEventStop},
+		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventStop},
 		SessionID:      sessionID,
 	}, timeout)
 }
@@ -117,7 +117,7 @@ func (c *ReceiverController) StopApplication(sessionID *string, timeout time.Dur
 //SetVolume sets the volume on the controller's chromecast.
 func (c *ReceiverController) SetVolume(volume *Volume, timeout time.Duration) (*api.CastMessage, error) {
 	return c.channel.Request(&ReceiverStatus{
-		PayloadHeaders: castv2.PayloadHeaders{Type: receiverControllerSystemEventSetVolume},
+		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventSetVolume},
 		Volume:         volume,
 	}, timeout)
 }

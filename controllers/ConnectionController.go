@@ -1,17 +1,19 @@
 package controllers
 
-import "github.com/AndreasAbdi/go-castv2"
+import (
+	"github.com/AndreasAbdi/go-castv2/primitives"
+)
 
 //ConnectionController is for basic connect and close caommands connection to a chromecast
 type ConnectionController struct {
-	channel *castv2.Channel
+	channel *primitives.Channel
 }
 
-var connect = castv2.PayloadHeaders{Type: "CONNECT"}
-var close = castv2.PayloadHeaders{Type: "CLOSE"}
+var connect = primitives.PayloadHeaders{Type: "CONNECT"}
+var close = primitives.PayloadHeaders{Type: "CLOSE"}
 
 //NewConnectionController constructor for connection controllers
-func NewConnectionController(client *castv2.Client, sourceID, destinationID string) *ConnectionController {
+func NewConnectionController(client *primitives.Client, sourceID, destinationID string) *ConnectionController {
 	controller := &ConnectionController{
 		channel: client.NewChannel(sourceID, destinationID, connectionControllerNamespace),
 	}

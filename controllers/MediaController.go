@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/AndreasAbdi/go-castv2"
 	"github.com/AndreasAbdi/go-castv2/api"
+	"github.com/AndreasAbdi/go-castv2/primitives"
 	"github.com/davecgh/go-spew/spew"
 )
 
@@ -18,21 +18,21 @@ Use it to enable or disable subtitles.
 */
 type MediaController struct {
 	interval       time.Duration
-	channel        *castv2.Channel
+	channel        *primitives.Channel
 	Incoming       chan []*MediaStatus
 	DestinationID  string
 	MediaSessionID int
 }
 
-var getMediaStatus = castv2.PayloadHeaders{Type: "GET_STATUS"}
+var getMediaStatus = primitives.PayloadHeaders{Type: "GET_STATUS"}
 
-var commandMediaPlay = castv2.PayloadHeaders{Type: "PLAY"}
-var commandMediaPause = castv2.PayloadHeaders{Type: "PAUSE"}
-var commandMediaStop = castv2.PayloadHeaders{Type: "STOP"}
-var commandMediaLoad = castv2.PayloadHeaders{Type: "LOAD"}
+var commandMediaPlay = primitives.PayloadHeaders{Type: "PLAY"}
+var commandMediaPause = primitives.PayloadHeaders{Type: "PAUSE"}
+var commandMediaStop = primitives.PayloadHeaders{Type: "STOP"}
+var commandMediaLoad = primitives.PayloadHeaders{Type: "LOAD"}
 
 //NewMediaController is the constructors for the media controller
-func NewMediaController(client *castv2.Client, sourceID, destinationID string) *MediaController {
+func NewMediaController(client *primitives.Client, sourceID, destinationID string) *MediaController {
 	controller := &MediaController{
 		channel:       client.NewChannel(sourceID, destinationID, mediaControllerNamespace),
 		Incoming:      make(chan []*MediaStatus, 0),

@@ -1,19 +1,19 @@
 package controllers
 
-import castv2 "github.com/AndreasAbdi/go-castv2"
+import "github.com/AndreasAbdi/go-castv2/primitives"
 
 type MediaCommand struct {
-	castv2.PayloadHeaders
+	primitives.PayloadHeaders
 	MediaSessionID int `json:"mediaSessionId"`
 }
 
 type MediaStatusResponse struct {
-	castv2.PayloadHeaders
+	primitives.PayloadHeaders
 	Status []*MediaStatus `json:"status,omitempty"`
 }
 
 type LoadCommand struct {
-	castv2.PayloadHeaders
+	primitives.PayloadHeaders
 	Media       MediaData              `json:"media"`
 	Autoplay    bool                   `json:"autoplay, omitempty"`
 	CurrentTime float64                `json:"currentTime, omitempty"`
@@ -94,7 +94,7 @@ type PhotoTrackMediaMetadata struct {
 }
 
 type MediaStatus struct {
-	castv2.PayloadHeaders
+	primitives.PayloadHeaders
 	MediaSessionID         int                    `json:"mediaSessionId"`
 	PlaybackRate           float64                `json:"playbackRate"`
 	PlayerState            string                 `json:"playerState"`

@@ -3,8 +3,8 @@ package controllers
 import (
 	"time"
 
-	"github.com/AndreasAbdi/go-castv2"
 	"github.com/AndreasAbdi/go-castv2/api"
+	"github.com/AndreasAbdi/go-castv2/primitives"
 )
 
 //Sends pings and wait for pongs - https://github.com/thibauts/node-castv2-client/blob/master/lib/controllers/heartbeat.js
@@ -16,15 +16,15 @@ const timeoutFactor = 3 // timeouts after 3 intervals
 //HeartbeatController is used to maintain a connection to a chromecast via sending keepalive messages.
 type HeartbeatController struct {
 	ticker      *time.Ticker
-	channel     *castv2.Channel
+	channel     *primitives.Channel
 	pongChannel chan *api.CastMessage
 }
 
-var ping = castv2.PayloadHeaders{Type: SystemEventPing}
-var pong = castv2.PayloadHeaders{Type: SystemEventPong}
+var ping = primitives.PayloadHeaders{Type: SystemEventPing}
+var pong = primitives.PayloadHeaders{Type: SystemEventPong}
 
 //NewHeartbeatController is a constructor for a heartbeat controller.
-func NewHeartbeatController(client *castv2.Client, sourceID, destinationID string) *HeartbeatController {
+func NewHeartbeatController(client *primitives.Client, sourceID, destinationID string) *HeartbeatController {
 	controller := &HeartbeatController{
 		channel: client.NewChannel(sourceID, destinationID, heartbeatControllerNamespace),
 	}
