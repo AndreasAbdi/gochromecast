@@ -48,7 +48,7 @@ func NewMediaController(client *castv2.Client, sourceID, destinationID string) *
 
 //SetDestinationID sets the target destination for the media controller
 func (c *MediaController) SetDestinationID(id string) {
-	c.channel.DestinationId = id
+	c.channel.DestinationID = id
 	c.DestinationID = id
 }
 

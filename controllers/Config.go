@@ -17,8 +17,8 @@ const receiverControllerSystemEventLaunch string = "LAUNCH"
 const receiverControllerSystemEventStop string = "STOP"
 const receiverControllerSystemEventLaunchError string = "LAUNCH_ERROR"
 
-const heartbeatControllerSystemEventPing string = "PING"
-const heartbeatControllerSystemEventPong string = "PONG"
+const SystemEventPing string = "PING"
+const SystemEventPong string = "PONG"
 
 const connectionControllerSystemEventConnect string = "CONNECT"
 const connectionControllerSystemEventClose string = "CLOSE"

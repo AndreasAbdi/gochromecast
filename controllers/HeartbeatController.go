@@ -7,38 +7,46 @@ import (
 	"github.com/AndreasAbdi/go-castv2/api"
 )
 
-// TODO: Send pings and wait for pongs - https://github.com/thibauts/node-castv2-client/blob/master/lib/controllers/heartbeat.js
+//Sends pings and wait for pongs - https://github.com/thibauts/node-castv2-client/blob/master/lib/controllers/heartbeat.js
 
 const interval = time.Second * 5
 const timeoutFactor = 3 // timeouts after 3 intervals
+//TODO: TimeoutFactor is essentially ignored. We need to change that so that we perform something on timeout.
 
-type heartbeatController struct {
-	ticker  *time.Ticker
-	channel *castv2.Channel
+//HeartbeatController is used to maintain a connection to a chromecast via sending keepalive messages.
+type HeartbeatController struct {
+	ticker      *time.Ticker
+	channel     *castv2.Channel
+	pongChannel chan *api.CastMessage
 }
 
-var ping = castv2.PayloadHeaders{Type: "PING"}
-var pong = castv2.PayloadHeaders{Type: "PONG"}
+var ping = castv2.PayloadHeaders{Type: SystemEventPing}
+var pong = castv2.PayloadHeaders{Type: SystemEventPong}
 
-func NewHeartbeatController(client *castv2.Client, sourceId, destinationId string) *heartbeatController {
-	controller := &heartbeatController{
-		channel: client.NewChannel(sourceId, destinationId, "urn:x-cast:com.google.cast.tp.heartbeat"),
+//NewHeartbeatController is a constructor for a heartbeat controller.
+func NewHeartbeatController(client *castv2.Client, sourceID, destinationID string) *HeartbeatController {
+	controller := &HeartbeatController{
+		channel: client.NewChannel(sourceID, destinationID, heartbeatControllerNamespace),
 	}
-
-	controller.channel.OnMessage("PING", controller.onPing)
+	controller.channel.OnMessage(SystemEventPing, controller.onPing)
 
 	return controller
 }
 
-func (c *heartbeatController) onPing(_ *api.CastMessage) {
+func (c *HeartbeatController) onPing(_ *api.CastMessage) {
 	c.channel.Send(pong)
 }
 
-func (c *heartbeatController) Start() {
+//TODO
+func (c *HeartbeatController) onTimeout() {
 
-	if c.ticker != nil {
-		c.Stop()
-	}
+}
+
+/*Start begins the keepalive event stream.
+Essentially, we send a ping event, then the chromecast will start sending pongs back.
+We would then need to consistently return ping events every specified interval period.
+*/
+func (c *HeartbeatController) Start() {
 
 	c.ticker = time.NewTicker(interval)
 	go func() {
@@ -47,10 +55,22 @@ func (c *heartbeatController) Start() {
 			c.channel.Send(ping)
 		}
 	}()
-
+	//Process ping events or timeout.
+	//TODO
+	go func() {
+		for {
+			select {
+			case <-time.After(timeoutFactor * interval):
+				return
+			case <-c.pongChannel:
+				return
+			}
+		}
+	}()
 }
 
-func (c *heartbeatController) Stop() {
+//Stop maintaining the keepalive.
+func (c *HeartbeatController) Stop() {
 
 	if c.ticker != nil {
 		c.ticker.Stop()
