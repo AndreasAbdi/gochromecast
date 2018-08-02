@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AndreasAbdi/go-castv2"
 	"github.com/AndreasAbdi/go-castv2/controllers"
+	"github.com/AndreasAbdi/go-castv2/primitives"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/mdns"
 )
@@ -30,7 +30,7 @@ func main() {
 
 			fmt.Printf("Got new chromecast: %v\n", entry)
 
-			client, err := castv2.NewClient(entry.Addr, entry.Port)
+			client, err := primitives.NewClient(entry.Addr, entry.Port)
 
 			if err != nil {
 				log.Fatalf("Failed to connect to chromecast %s", entry.Addr)
