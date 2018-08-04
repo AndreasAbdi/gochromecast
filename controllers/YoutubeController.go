@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/AndreasAbdi/go-castv2/generic"
 
@@ -20,6 +23,12 @@ Essentially, you start a session with the website, and the website/session handl
 
 const defaultTimeout = 10
 
+const youtubeBaseURL = "https://www.youtube.com/"
+const bindURL = youtubeBaseURL + "api/lounge/bc/bind"
+const loungeTokenURL = youtubeBaseURL + "api/lounge/pairing/get_lounge_token_batch"
+
+const loungeIDHeader = "X-YouTube-LoungeId-Token"
+
 var messageTypeGetSessionID = "getMdxSessionStatus"
 var messageTypeStatus = "mdxSessionStatus"
 
@@ -27,6 +36,19 @@ const actionSetPlaylist = "setPlaylist"
 const actionRemoveVideo = "removeVideo"
 const actionInsertVideo = "insertVideo"
 const actionAdd = "addVideo"
+
+const version = "8"
+const chromecastVersion = "1"
+const gSessionIDQuery = "gsessionid"
+const cVersionQuery = "CVER"
+const requestIDQuery = "RID"
+const sessionIDQuery = "SID"
+const versionQuery = "VER"
+
+const videoIDKey = "_videoId"
+const actionKey = "__sc"
+const countKey = "count"
+const defaultCount = 1
 
 //TODO. This will handle the internal operations of executing commands against the chromecast.
 type youtubeSession struct {
@@ -37,6 +59,8 @@ type YoutubeController struct {
 	channel        *primitives.Channel
 	screenID       int
 	youtubeSession youtubeSession
+	sessionID      int
+	gSessionID     int
 	loungeID       int
 	counter        generic.Counter
 }
@@ -98,6 +122,48 @@ func (c *YoutubeController) RemoveFromQueue(videoID int) {
 
 //TODO: send a request for an action.
 func (c *YoutubeController) sendAction(actionType string, videoID int) {
+	request, err := c.createActionRequest(actionType, videoID)
+	if err != nil {
+		//TODO
+		return
+	}
+	c.sendRequest(&request)
+}
+
+func (c *YoutubeController) createActionRequest(actionType string, videoID int) (http.Request, error) {
+	request := http.Request{}
+	requestID := c.counter.GetAndIncrement()
+	message := map[string]interface{}{
+		actionKey:  actionType,
+		videoIDKey: videoID,
+		countKey:   defaultCount,
+	}
+
+	messageInBytes, err := json.Marshal(message)
+	if err != nil {
+		return request, err
+	}
+	req, err := http.NewRequest("POST", bindURL, bytes.NewBuffer(messageInBytes))
+	if err != nil {
+		return request, err
+	}
+	req.Header.Set(loungeIDHeader, strconv.Itoa(c.loungeID))
+	req.URL.Query().Add(sessionIDQuery, strconv.Itoa(c.sessionID))
+	req.URL.Query().Add(requestIDQuery, strconv.Itoa(requestID))
+	req.URL.Query().Add(gSessionIDQuery, strconv.Itoa(c.gSessionID))
+	req.URL.Query().Add(cVersionQuery, chromecastVersion)
+	req.URL.Query().Add(versionQuery, version)
+	return request, nil
+
+}
+
+func (c *YoutubeController) sendRequest(request *http.Request) {
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		panic(err)
+	}
+	defer response.Body.Close()
 
 }
 
