@@ -106,7 +106,7 @@ Throws an error if timeout has passed waiting for the message to be returned.
 */
 func (c *Channel) Request(payload hasRequestID, timeout time.Duration) (*api.CastMessage, error) {
 
-	payload.setRequestID(c.counter.IncrementAndGet())
+	payload.setRequestID(c.counter.GetAndIncrement())
 
 	response := make(chan *api.CastMessage)
 
