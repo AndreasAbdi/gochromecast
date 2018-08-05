@@ -22,6 +22,8 @@ const receiverControllerSystemEventLaunchError string = "LAUNCH_ERROR"
 const SystemEventPing string = "PING"
 const SystemEventPong string = "PONG"
 
+const eventTypeLoad string = "LOAD"
+
 const connectionControllerSystemEventConnect string = "CONNECT"
 const connectionControllerSystemEventClose string = "CLOSE"
 

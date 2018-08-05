@@ -30,7 +30,8 @@ var getMediaStatus = primitives.PayloadHeaders{Type: "GET_STATUS"}
 var commandMediaPlay = primitives.PayloadHeaders{Type: "PLAY"}
 var commandMediaPause = primitives.PayloadHeaders{Type: "PAUSE"}
 var commandMediaStop = primitives.PayloadHeaders{Type: "STOP"}
-var commandMediaLoad = primitives.PayloadHeaders{Type: "LOAD"}
+
+const responseTypeMediaStatus = "MEDIA_STATUS"
 
 //NewMediaController is the constructors for the media controller
 func NewMediaController(client *primitives.Client, sourceID, destinationID string) *MediaController {
@@ -40,7 +41,7 @@ func NewMediaController(client *primitives.Client, sourceID, destinationID strin
 		DestinationID: destinationID,
 	}
 
-	controller.channel.OnMessage("MEDIA_STATUS", func(message *api.CastMessage) {
+	controller.channel.OnMessage(responseTypeMediaStatus, func(message *api.CastMessage) {
 		controller.onStatus(message)
 	})
 
@@ -100,24 +101,27 @@ func (c *MediaController) Load(url string, contentType string, timeout time.Dura
 	if err != nil {
 		return nil, err
 	}
+
 	message, err := c.channel.Request(&media.LoadCommand{
-		commandMediaLoad,
-		mediaData,
-		true,
-		0,
-		nil,
+		PayloadHeaders: primitives.PayloadHeaders{Type: eventTypeLoad},
+		Media:          mediaData,
+		Autoplay:       true,
+		CurrentTime:    0,
+		CustomData:     nil,
 	}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send play command: %s", err)
 	}
-
+	fmt.Printf("There is no error")
 	return message, nil
 }
 
 //Play sends the play command so that the chromecast session is resumed
 func (c *MediaController) Play(timeout time.Duration) (*api.CastMessage, error) {
 
-	message, err := c.channel.Request(&media.MediaCommand{commandMediaPlay, c.MediaSessionID}, timeout)
+	message, err := c.channel.Request(&media.MediaCommand{
+		PayloadHeaders: commandMediaPlay,
+		MediaSessionID: c.MediaSessionID}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send play command: %s", err)
 	}
@@ -128,7 +132,9 @@ func (c *MediaController) Play(timeout time.Duration) (*api.CastMessage, error) 
 //Pause sends the pause command to the chromecast
 func (c *MediaController) Pause(timeout time.Duration) (*api.CastMessage, error) {
 
-	message, err := c.channel.Request(&media.MediaCommand{commandMediaPause, c.MediaSessionID}, timeout)
+	message, err := c.channel.Request(&media.MediaCommand{
+		PayloadHeaders: commandMediaPause,
+		MediaSessionID: c.MediaSessionID}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send pause command: %s", err)
 	}
@@ -139,7 +145,9 @@ func (c *MediaController) Pause(timeout time.Duration) (*api.CastMessage, error)
 //Stop sends the stop command to the chromecast
 func (c *MediaController) Stop(timeout time.Duration) (*api.CastMessage, error) {
 
-	message, err := c.channel.Request(&media.MediaCommand{commandMediaStop, c.MediaSessionID}, timeout)
+	message, err := c.channel.Request(&media.MediaCommand{
+		PayloadHeaders: commandMediaStop,
+		MediaSessionID: c.MediaSessionID}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send stop command: %s", err)
 	}
