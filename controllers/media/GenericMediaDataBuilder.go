@@ -1,4 +1,4 @@
-package controllers
+package media
 
 import (
 	"fmt"
@@ -9,6 +9,12 @@ import (
 )
 
 //Perhaps considering error returns if builder fails to add operation.
+
+const GenericMediaMetadataType int = 0
+const MovieMetadataType int = 1
+const TvShowMetadataType int = 2
+const MusicTrackMetadataType int = 3
+const PhotoMediaMetadataType int = 4
 
 //GenericMediaDataBuilder component for building up mediadatabuilders
 type GenericMediaDataBuilder struct {

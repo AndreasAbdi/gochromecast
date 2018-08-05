@@ -1,7 +1,7 @@
 package controllers
 
 /*
-After deliberation, this should probably configs that are separate from the actual media files. Mostly because I don't really know when google is going to change the API or status messages. Is it a good idea? IDK. suggestions from the internet are to keep constants as close as possible to their usages. That makes sense, but these are sorta related to the message formats that google are using, so I'm reluctant.
+After deliberation, this should probably contain configs that are separate from the actual media files. Mostly because I don't really know when google is going to change the API or status messages. Is it a good idea? IDK. suggestions from the internet are to keep constants as close as possible to their usages. That makes sense, but these are sorta related to the message formats that google are using, so I'm reluctant.
 */
 
 const receiverControllerNamespace string = "urn:x-cast:com.google.cast.receiver"
@@ -25,18 +25,7 @@ const SystemEventPong string = "PONG"
 const connectionControllerSystemEventConnect string = "CONNECT"
 const connectionControllerSystemEventClose string = "CLOSE"
 
-const GenericMediaMetadataType int = 0
-const MovieMetadataType int = 1
-const TvShowMetadataType int = 2
-const MusicTrackMetadataType int = 3
-const PhotoMediaMetadataType int = 4
-
 //Media play requests need a stream type. These are the valid stream types.
-type StreamType string
-
-const NoneStreamType StreamType = "NONE"
-const BufferedStreamType StreamType = "BUFFERED"
-const LiveStreamType StreamType = "LIVE"
 
 //media receiver is a generic media player for urls. Can play images, videos, music, etc.
 const mediaReceiverAppID string = "CC1AD845"

@@ -1,6 +1,12 @@
-package controllers
+package media
 
 //Perhaps considering error returns if builder fails to add operation.
+
+type StreamType string
+
+const NoneStreamType StreamType = "NONE"
+const BufferedStreamType StreamType = "BUFFERED"
+const LiveStreamType StreamType = "LIVE"
 
 //MediaDataBuilder interface for generic media player media data messages to pass to chromecast.
 type MediaDataBuilder interface {

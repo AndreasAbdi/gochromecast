@@ -1,4 +1,4 @@
-package controllers
+package receiver
 
 import "github.com/AndreasAbdi/go-castv2/primitives"
 
@@ -41,4 +41,18 @@ type LaunchRequest struct {
 type StopRequest struct {
 	primitives.PayloadHeaders
 	SessionID *string `json:"sessionID,omitempty"`
+}
+
+//GetSessionByNamespace attempts to return the first session with a specified namespace.
+func (s *ReceiverStatus) GetSessionByNamespace(namespace string) *ApplicationSession {
+
+	for _, app := range s.Applications {
+		for _, ns := range app.Namespaces {
+			if ns.Name == namespace {
+				return app
+			}
+		}
+	}
+
+	return nil
 }

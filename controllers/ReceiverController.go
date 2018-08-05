@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/api"
+	"github.com/AndreasAbdi/go-castv2/controllers/receiver"
 	"github.com/AndreasAbdi/go-castv2/primitives"
 	"github.com/davecgh/go-spew/spew"
 )
@@ -16,14 +17,14 @@ type ReceiverController struct {
 	interval           time.Duration
 	currentApplication string
 	channel            *primitives.Channel
-	Incoming           chan *ReceiverStatus
+	Incoming           chan *receiver.ReceiverStatus
 }
 
 //NewReceiverController is for building a new receiver controller
 func NewReceiverController(client *primitives.Client, sourceID, destinationID string) *ReceiverController {
 	controller := &ReceiverController{
 		channel:  client.NewChannel(sourceID, destinationID, receiverControllerNamespace),
-		Incoming: make(chan *ReceiverStatus, 0),
+		Incoming: make(chan *receiver.ReceiverStatus, 0),
 	}
 
 	controller.channel.OnMessage(receiverControllerSystemEventReceiverStatus, controller.onStatus)
@@ -34,7 +35,7 @@ func NewReceiverController(client *primitives.Client, sourceID, destinationID st
 func (c *ReceiverController) onStatus(message *api.CastMessage) {
 	spew.Dump("Got status message", message)
 
-	response := &StatusResponse{}
+	response := &receiver.StatusResponse{}
 
 	err := json.Unmarshal([]byte(*message.PayloadUtf8), response)
 
@@ -58,29 +59,15 @@ func (c *ReceiverController) onStatus(message *api.CastMessage) {
 
 }
 
-//GetSessionByNamespace attempts to return the first session with a specified namespace.
-func (s *ReceiverStatus) GetSessionByNamespace(namespace string) *ApplicationSession {
-
-	for _, app := range s.Applications {
-		for _, ns := range app.Namespaces {
-			if ns.Name == namespace {
-				return app
-			}
-		}
-	}
-
-	return nil
-}
-
 //GetStatus attempts to receive the current status of the controllers chromecast device.
-func (c *ReceiverController) GetStatus(timeout time.Duration) (*ReceiverStatus, error) {
+func (c *ReceiverController) GetStatus(timeout time.Duration) (*receiver.ReceiverStatus, error) {
 	message, err := c.channel.Request(&primitives.PayloadHeaders{Type: receiverControllerSystemEventGetStatus}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get receiver status: %s", err)
 	}
 	c.onStatus(message)
 
-	response := &StatusResponse{}
+	response := &receiver.StatusResponse{}
 
 	err = json.Unmarshal([]byte(*message.PayloadUtf8), response)
 
@@ -98,7 +85,7 @@ forceLaunch forces the app to run even if something is already running.
 func (c *ReceiverController) LaunchApplication(appID *string, timeout time.Duration, forceLaunch bool) {
 	//TODO: test out force launch and actually write it.
 	log.Printf("Attempting to launch an application: %s\n", *appID)
-	c.channel.Request(&LaunchRequest{
+	c.channel.Request(&receiver.LaunchRequest{
 		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventLaunch},
 		AppID:          appID,
 	}, timeout)
@@ -108,22 +95,22 @@ func (c *ReceiverController) LaunchApplication(appID *string, timeout time.Durat
 //Actually, you know what? we could do it so that there is a wrapper that sends requests to these thingies.
 func (c *ReceiverController) StopApplication(sessionID *string, timeout time.Duration) {
 	log.Println("Attempting to stop the current application")
-	c.channel.Request(&StopRequest{
+	c.channel.Request(&receiver.StopRequest{
 		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventStop},
 		SessionID:      sessionID,
 	}, timeout)
 }
 
 //SetVolume sets the volume on the controller's chromecast.
-func (c *ReceiverController) SetVolume(volume *Volume, timeout time.Duration) (*api.CastMessage, error) {
-	return c.channel.Request(&ReceiverStatus{
+func (c *ReceiverController) SetVolume(volume *receiver.Volume, timeout time.Duration) (*api.CastMessage, error) {
+	return c.channel.Request(&receiver.ReceiverStatus{
 		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventSetVolume},
 		Volume:         volume,
 	}, timeout)
 }
 
 //GetVolume gets the volume on the controller's chromecast.
-func (c *ReceiverController) GetVolume(timeout time.Duration) (*Volume, error) {
+func (c *ReceiverController) GetVolume(timeout time.Duration) (*receiver.Volume, error) {
 	status, err := c.GetStatus(timeout)
 
 	if err != nil {

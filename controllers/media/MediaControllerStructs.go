@@ -1,4 +1,4 @@
-package controllers
+package media
 
 import "github.com/AndreasAbdi/go-castv2/primitives"
 
@@ -15,9 +15,9 @@ type MediaStatusResponse struct {
 type LoadCommand struct {
 	primitives.PayloadHeaders
 	Media       MediaData              `json:"media"`
-	Autoplay    bool                   `json:"autoplay, omitempty"`
-	CurrentTime float64                `json:"currentTime, omitempty"`
-	CustomData  map[string]interface{} `json:"customData, omitempty"`
+	Autoplay    bool                   `json:"autoplay,omitempty"`
+	CurrentTime float64                `json:"currentTime,omitempty"`
+	CustomData  map[string]interface{} `json:"customData,omitempty"`
 }
 
 //Generic enum type for media data
@@ -91,6 +91,11 @@ type PhotoTrackMediaMetadata struct {
 	Width            int64
 	Height           int64
 	CreationDateTime string
+}
+
+type Volume struct {
+	Level *float64 `json:"level,omitempty"`
+	Muted *bool    `json:"muted,omitempty"`
 }
 
 type MediaStatus struct {

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/api"
+	"github.com/AndreasAbdi/go-castv2/controllers/media"
 	"github.com/AndreasAbdi/go-castv2/primitives"
 	"github.com/davecgh/go-spew/spew"
 )
@@ -19,7 +20,7 @@ Use it to enable or disable subtitles.
 type MediaController struct {
 	interval       time.Duration
 	channel        *primitives.Channel
-	Incoming       chan []*MediaStatus
+	Incoming       chan []*media.MediaStatus
 	DestinationID  string
 	MediaSessionID int
 }
@@ -35,7 +36,7 @@ var commandMediaLoad = primitives.PayloadHeaders{Type: "LOAD"}
 func NewMediaController(client *primitives.Client, sourceID, destinationID string) *MediaController {
 	controller := &MediaController{
 		channel:       client.NewChannel(sourceID, destinationID, mediaControllerNamespace),
-		Incoming:      make(chan []*MediaStatus, 0),
+		Incoming:      make(chan []*media.MediaStatus, 0),
 		DestinationID: destinationID,
 	}
 
@@ -52,10 +53,10 @@ func (c *MediaController) SetDestinationID(id string) {
 	c.DestinationID = id
 }
 
-func (c *MediaController) onStatus(message *api.CastMessage) ([]*MediaStatus, error) {
+func (c *MediaController) onStatus(message *api.CastMessage) ([]*media.MediaStatus, error) {
 	spew.Dump("Got media status message", message)
 
-	response := &MediaStatusResponse{}
+	response := &media.MediaStatusResponse{}
 
 	err := json.Unmarshal([]byte(*message.PayloadUtf8), response)
 
@@ -73,7 +74,7 @@ func (c *MediaController) onStatus(message *api.CastMessage) ([]*MediaStatus, er
 }
 
 //GetStatus attempts to request the chromecast return the status of the current media controller channel
-func (c *MediaController) GetStatus(timeout time.Duration) ([]*MediaStatus, error) {
+func (c *MediaController) GetStatus(timeout time.Duration) ([]*media.MediaStatus, error) {
 
 	spew.Dump("getting media Status")
 
@@ -92,14 +93,14 @@ func (c *MediaController) GetStatus(timeout time.Duration) ([]*MediaStatus, erro
 func (c *MediaController) Load(url string, contentType string, timeout time.Duration) (*api.CastMessage, error) {
 	//TODO should do something about messaging with the request type so we can attach more metadata
 	//TODO also should be sending a message of type media data( should probably actually construct the request)
-	builder := GenericMediaDataBuilder{}
+	builder := media.GenericMediaDataBuilder{}
 	builder.SetContentID(url)
 	builder.SetContentType(contentType)
 	mediaData, err := builder.Build()
 	if err != nil {
 		return nil, err
 	}
-	message, err := c.channel.Request(&LoadCommand{
+	message, err := c.channel.Request(&media.LoadCommand{
 		commandMediaLoad,
 		mediaData,
 		true,
@@ -116,7 +117,7 @@ func (c *MediaController) Load(url string, contentType string, timeout time.Dura
 //Play sends the play command so that the chromecast session is resumed
 func (c *MediaController) Play(timeout time.Duration) (*api.CastMessage, error) {
 
-	message, err := c.channel.Request(&MediaCommand{commandMediaPlay, c.MediaSessionID}, timeout)
+	message, err := c.channel.Request(&media.MediaCommand{commandMediaPlay, c.MediaSessionID}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send play command: %s", err)
 	}
@@ -127,7 +128,7 @@ func (c *MediaController) Play(timeout time.Duration) (*api.CastMessage, error) 
 //Pause sends the pause command to the chromecast
 func (c *MediaController) Pause(timeout time.Duration) (*api.CastMessage, error) {
 
-	message, err := c.channel.Request(&MediaCommand{commandMediaPause, c.MediaSessionID}, timeout)
+	message, err := c.channel.Request(&media.MediaCommand{commandMediaPause, c.MediaSessionID}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send pause command: %s", err)
 	}
@@ -138,7 +139,7 @@ func (c *MediaController) Pause(timeout time.Duration) (*api.CastMessage, error)
 //Stop sends the stop command to the chromecast
 func (c *MediaController) Stop(timeout time.Duration) (*api.CastMessage, error) {
 
-	message, err := c.channel.Request(&MediaCommand{commandMediaStop, c.MediaSessionID}, timeout)
+	message, err := c.channel.Request(&media.MediaCommand{commandMediaStop, c.MediaSessionID}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send stop command: %s", err)
 	}
