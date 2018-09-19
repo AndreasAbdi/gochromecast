@@ -1,11 +1,13 @@
 package castv2
 
 import (
+	"log"
 	"net"
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/controllers"
 	"github.com/AndreasAbdi/go-castv2/primitives"
+	"github.com/davecgh/go-spew/spew"
 )
 
 const defaultTimeout = time.Second * 10
@@ -25,18 +27,19 @@ func NewDevice(host net.IP, port int) (Device, error) {
 
 	client, err := primitives.NewClient(host, port)
 	if err != nil {
+		log.Fatalf("Failed to connect to chromecast %s", host)
 		return device, err
 	}
 	device.client = client
 
-	device.heartbeatController = controllers.NewHeartbeatController(client, defaultChromecastSenderID, defaultChromecastSenderID)
+	device.heartbeatController = controllers.NewHeartbeatController(client, defaultChromecastSenderID, defaultChromecastReceiverID)
 	device.heartbeatController.Start()
 
-	device.connectionController = controllers.NewConnectionController(client, defaultChromecastSenderID, defaultChromecastSenderID)
+	device.connectionController = controllers.NewConnectionController(client, defaultChromecastSenderID, defaultChromecastReceiverID)
 	device.connectionController.Connect()
 
-	device.receiverController = controllers.NewReceiverController(client, defaultChromecastSenderID, defaultChromecastSenderID)
-	device.mediaController = controllers.NewMediaController(client, defaultChromecastSenderID, defaultChromecastSenderID)
+	device.receiverController = controllers.NewReceiverController(client, defaultChromecastSenderID, defaultChromecastReceiverID)
+	device.mediaController = controllers.NewMediaController(client, defaultChromecastSenderID, defaultChromecastReceiverID)
 
 	return device, nil
 }
@@ -44,6 +47,18 @@ func NewDevice(host net.IP, port int) (Device, error) {
 //PlayMedia plays a video via the media controller.
 func (device *Device) PlayMedia(URL string, MIMEType string) {
 	appID := mediaReceiverAppID
-	device.receiverController.LaunchApplication(&appID, defaultTimeout, false)
-	device.mediaController.Load(URL, MIMEType, defaultTimeout)
+	device.receiverController.LaunchApplication(&appID, defaultTimeout*4, false)
+	device.mediaController.Load(URL, MIMEType, defaultTimeout*4)
+}
+
+//PlayMedia plays a video via the media controller.
+func (device *Device) TestYoutube(URL string) {
+	appID := youtubeAppID
+	device.receiverController.LaunchApplication(&appID, defaultTimeout*4, false)
+}
+
+func (device *Device) GetStatus(timeout time.Duration) {
+	response, err := device.receiverController.GetStatus(time.Second * 5)
+	spew.Dump("Status response", response, err)
+
 }
