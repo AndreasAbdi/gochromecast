@@ -23,7 +23,7 @@ var tests = []struct {
 	{`Message/Partial; number=2; total=3; id="oc=jpbe0M2Yt4s@thumper.bellcore.com";`, `Message/Partial; number=2; total=3; id="oc=jpbe0M2Yt4s@thumper.bellcore.com";`, nil},
 }
 
-func TestBuildContentTypeList(t *testing.T) {
+func TestBuildContentType(t *testing.T) {
 	for num, test := range tests {
 		actual, err := NewContentType(test.input)
 		if err != test.errorResult {
@@ -37,16 +37,4 @@ func TestBuildContentTypeList(t *testing.T) {
 		}
 	}
 	t.Log("all tests completed")
-}
-
-//TestBuildContentType tests building content types for different inputs.
-func TestBuildContentType(t *testing.T) {
-	expected := contentType("")
-	actual, err := NewContentType("")
-	if err != nil {
-		t.Error("Error returned")
-	}
-	if expected != actual {
-		t.Error("Result was not equal to expectation. {} received, {} expected", actual, expected)
-	}
 }
