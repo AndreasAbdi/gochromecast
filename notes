@@ -19,6 +19,8 @@ notes on running chromecast actions via golang.
 
 [Google chromecast reference docs](https://developers.google.com/cast/docs/reference/)
 
+[MediaData/metadata formats](https://developers.google.com/cast/docs/reference/messages#MediaData)
+
 ## Information
 
 - no default supported API for chromecast except for the chromecast play button, ios device, and android device. Have to use a different language (nodecast, pychromecast, and go-cast are available).
