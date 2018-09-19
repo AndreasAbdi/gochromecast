@@ -187,7 +187,7 @@ func sendInitializeQueueRequest(request http.Request) {
 
 type GetScreenIDRequest struct {
 	primitives.PayloadHeaders
-	screenID int `json:"screen_ids"`
+	ScreenID int `json:"screen_ids"`
 }
 
 func (c *YoutubeController) getScreenID() (int, error) {
