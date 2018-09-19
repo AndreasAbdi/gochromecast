@@ -3,7 +3,7 @@ package primitives
 //PayloadHeaders are general request components for any message to be passed to a chromecast.
 type PayloadHeaders struct {
 	Type      string `json:"type"`
-	RequestID *int   `json:"requestID,omitempty"`
+	RequestID *int   `json:"requestId,omitempty"`
 }
 
 func (h *PayloadHeaders) setRequestID(id int) {
