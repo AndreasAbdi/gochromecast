@@ -22,7 +22,7 @@ import (
 
 //GenericMediaDataBuilder component for building up mediadatabuilders
 type PhotoTrackMediaDataBuilder struct {
-	StandardMediaDataBuilder
+	standardMediaDataBuilder
 	artist           string
 	location         string
 	latitude         float64
@@ -76,7 +76,7 @@ func (builder *PhotoTrackMediaDataBuilder) Build() (MediaData, error) {
 	metadata := PhotoTrackMediaMetadata{
 		StandardMediaMetadata: StandardMediaMetadata{
 			MetadataType: PhotoMediaMetadataType,
-			Title:        builder.title,
+			Title:        &builder.title,
 		},
 		Artist:           builder.artist,
 		Location:         builder.location,

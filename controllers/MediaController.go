@@ -91,18 +91,27 @@ func (c *MediaController) GetStatus(timeout time.Duration) ([]*media.MediaStatus
 
 //TODO
 //Load sends a load request to play a generic media event
-func (c *MediaController) Load(url string, contentType string, timeout time.Duration) (*api.CastMessage, error) {
-	//TODO should do something about messaging with the request type so we can attach more metadata
+func (c *MediaController) Load(url string, contentTypeString string, timeout time.Duration) (*api.CastMessage, error) {
+	//TODO should do something about messaging with the contenttype, so it works with different media types. so we can attach more metadata
 	//TODO also should be sending a message of type media data( should probably actually construct the request)
-	builder := media.GenericMediaDataBuilder{}
-	builder.SetContentID(url)
-	builder.SetContentType(contentType)
+	contentType, err := media.NewContentType(contentTypeString)
+	if err != nil {
+		return nil, err
+	}
+	contentID, err := media.NewContentID(url)
+	if err != nil {
+		return nil, err
+	}
+	builder, err := media.NewGenericMediaDataBuilder(contentID, contentType, media.NoneStreamType)
+	if err != nil {
+		return nil, err
+	}
 	mediaData, err := builder.Build()
 	if err != nil {
 		return nil, err
 	}
 
-	message, err := c.channel.Request(&media.LoadCommand{
+	_, err = c.channel.Request(&media.LoadCommand{
 		PayloadHeaders: primitives.PayloadHeaders{Type: eventTypeLoad},
 		Media:          mediaData,
 		Autoplay:       true,
@@ -113,7 +122,7 @@ func (c *MediaController) Load(url string, contentType string, timeout time.Dura
 		return nil, fmt.Errorf("Failed to send play command: %s", err)
 	}
 	fmt.Printf("There is no error")
-	return message, nil
+	return nil, nil
 }
 
 //Play sends the play command so that the chromecast session is resumed

@@ -22,6 +22,18 @@ type LoadCommand struct {
 
 //Generic enum type for media data
 
+//StreamType is a type for media data defining what type of stream the data is supposed to be.
+type streamType string
+
+//NoneStreamType is for when you don't want to define a stream type.
+const NoneStreamType streamType = "NONE"
+
+//BufferedStreamType is for a stream that should be buffered/loaded.
+const BufferedStreamType streamType = "BUFFERED"
+
+//LiveStreamType is for videos that are livestreaming. (Twitch/Youtube livestreams, etc)
+const LiveStreamType streamType = "LIVE"
+
 //MediaData is data format for message to send to chromecast to play a (vid/image/tvshow/music video/etc) via generic media player.
 //https://developers.google.com/cast/docs/reference/messages#MediaData is the general info.
 type MediaData struct {
@@ -31,22 +43,22 @@ type MediaData struct {
 	ContentID   string                 `json:"contentId"`
 	ContentType string                 `json:"contentType"` //data MIME
 	StreamType  string                 `json:"streamType"`  // (NONE, BUFFERED, or LIVE)
-	Duration    float64                `json:"duration,omitempty"`
+	Duration    *float64               `json:"duration,omitempty"`
 	Metadata    map[string]interface{} `json:"metadata,omitempty"` //stores a mediadata
 	CustomData  map[string]interface{} `json:"customData,omitempty"`
 }
 
 //StandardMediaMetadata is standard part for all metadata objects parts for mediadata objects.
 type StandardMediaMetadata struct {
-	MetadataType int    `json:"metadataType"`
-	Title        string `json:"title,omitempty"`
+	MetadataType int     `json:"metadataType"`
+	Title        *string `json:"title,omitempty"`
 }
 
-type GenericMediaMetadata struct {
+type genericMediaMetadata struct {
 	StandardMediaMetadata
 	Images      []string `json:"images,omitempty"`
-	Subtitle    string   `json:"subtitle,omitempty"`
-	ReleaseDate string   `json:"releaseDate,omitempty"`
+	Subtitle    *string  `json:"subtitle,omitempty"`
+	ReleaseDate *string  `json:"releaseDate,omitempty"`
 }
 
 //TODO

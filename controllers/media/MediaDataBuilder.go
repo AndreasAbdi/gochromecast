@@ -2,12 +2,6 @@ package media
 
 //Perhaps considering error returns if builder fails to add operation.
 
-type StreamType string
-
-const NoneStreamType StreamType = "NONE"
-const BufferedStreamType StreamType = "BUFFERED"
-const LiveStreamType StreamType = "LIVE"
-
 //MediaDataBuilder interface for generic media player media data messages to pass to chromecast.
 type MediaDataBuilder interface {
 	SetContentID(string)
@@ -18,48 +12,44 @@ type MediaDataBuilder interface {
 	Build() (MediaData, error)
 }
 
-//GenericMediaDataBuilder component for building up mediadatabuilders
-type StandardMediaDataBuilder struct {
+//standardMediaDataBuilder component for building up mediadatabuilders
+type standardMediaDataBuilder struct {
 	contentID   string
 	contentType string
 	streamType  string
-	duration    float64
+	duration    *float64
 	customData  map[string]interface{}
 }
 
 //SetContentID sets the contentID field
-func (builder *StandardMediaDataBuilder) SetContentID(id string) {
-	builder.contentID = id
+func (builder *standardMediaDataBuilder) SetContentID(id contentID) {
+	builder.contentID = string(id)
 }
 
-//SetContentType sets the contentType field
-func (builder *StandardMediaDataBuilder) SetContentType(cType string) {
-	builder.contentType = cType
+func (builder *standardMediaDataBuilder) SetContentType(contentType contentType) {
+	builder.contentType = string(contentType)
 }
 
 //SetStreamType sets the streamType field
-func (builder *StandardMediaDataBuilder) SetStreamType(sType string) {
-	switch StreamType(sType) {
+func (builder *standardMediaDataBuilder) SetStreamType(sType streamType) {
+	switch sType {
 	case NoneStreamType, BufferedStreamType, LiveStreamType:
-		builder.streamType = sType
+		builder.streamType = string(sType)
 	}
 }
 
 //SetDuration sets the contentType field
-func (builder *StandardMediaDataBuilder) SetDuration(duration float64) {
-	if duration < 0 {
-		return
-	}
+func (builder *standardMediaDataBuilder) SetDuration(duration *float64) {
 	builder.duration = duration
 }
 
 //SetCustomData sets the custom data field
-func (builder *StandardMediaDataBuilder) SetCustomData(customData map[string]interface{}) {
+func (builder *standardMediaDataBuilder) SetCustomData(customData map[string]interface{}) {
 	builder.customData = customData
 }
 
 //Build returns a standard mediadata object from its current data.
-func (builder *StandardMediaDataBuilder) Build() (MediaData, error) {
+func (builder *standardMediaDataBuilder) Build() (MediaData, error) {
 	return MediaData{
 		builder.contentID,
 		builder.contentType,
