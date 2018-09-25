@@ -14,10 +14,9 @@ import (
 
 //ReceiverController is a chromecast controller for the receiver namespace. This involves
 type ReceiverController struct {
-	interval           time.Duration
-	currentApplication string
-	channel            *primitives.Channel
-	Incoming           chan *receiver.ReceiverStatus
+	interval time.Duration
+	channel  *primitives.Channel
+	Incoming chan *receiver.ReceiverStatus
 }
 
 //NewReceiverController is for building a new receiver controller
@@ -47,12 +46,6 @@ func (c *ReceiverController) onStatus(message *api.CastMessage) {
 	select {
 	case c.Incoming <- response.Status:
 		log.Printf("Delivered status")
-		/*
-			pychromecast presumes the first application in the applications list is the one running.
-			Honestly don't know how to run multiple applications so would be hard for me to test.
-		*/
-		appData := response.Status.Applications[0]
-		c.currentApplication = *appData.AppID
 	case <-time.After(time.Second):
 		log.Printf("Incoming status, but we aren't listening. %v", response.Status)
 	}
@@ -84,7 +77,6 @@ forceLaunch forces the app to run even if something is already running.
 */
 func (c *ReceiverController) LaunchApplication(appID *string, timeout time.Duration, forceLaunch bool) {
 	//TODO: test out force launch and actually write it.
-	log.Printf("Attempting to launch an application: %s\n", *appID)
 	c.channel.Request(&receiver.LaunchRequest{
 		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventLaunch},
 		AppID:          appID,

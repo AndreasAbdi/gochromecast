@@ -18,10 +18,8 @@ Use it to load, play, pause, stop media.
 Use it to enable or disable subtitles.
 */
 type MediaController struct {
-	interval       time.Duration
-	channel        *primitives.Channel
+	connection     *mediaConnection
 	Incoming       chan []*media.MediaStatus
-	DestinationID  string
 	MediaSessionID int
 }
 
@@ -34,24 +32,17 @@ var commandMediaStop = primitives.PayloadHeaders{Type: "STOP"}
 const responseTypeMediaStatus = "MEDIA_STATUS"
 
 //NewMediaController is the constructors for the media controller
-func NewMediaController(client *primitives.Client, sourceID, destinationID string) *MediaController {
+func NewMediaController(client *primitives.Client, sourceID string, receiverController *ReceiverController) *MediaController {
+	mediaConnection := NewMediaConnection(client, receiverController, MediaControllerNamespace, sourceID)
 	controller := &MediaController{
-		channel:       client.NewChannel(sourceID, destinationID, mediaControllerNamespace),
-		Incoming:      make(chan []*media.MediaStatus, 0),
-		DestinationID: destinationID,
+		Incoming:   make(chan []*media.MediaStatus, 0),
+		connection: mediaConnection,
 	}
 
-	controller.channel.OnMessage(responseTypeMediaStatus, func(message *api.CastMessage) {
+	controller.connection.OnMessage(responseTypeMediaStatus, func(message *api.CastMessage) {
 		controller.onStatus(message)
 	})
-
 	return controller
-}
-
-//SetDestinationID sets the target destination for the media controller
-func (c *MediaController) SetDestinationID(id string) {
-	c.channel.DestinationID = id
-	c.DestinationID = id
 }
 
 func (c *MediaController) onStatus(message *api.CastMessage) ([]*media.MediaStatus, error) {
@@ -68,7 +59,7 @@ func (c *MediaController) onStatus(message *api.CastMessage) ([]*media.MediaStat
 	select {
 	case c.Incoming <- response.Status:
 	default:
-		log.Printf("Incoming status, but we aren't listening. %v", response)
+		log.Printf("Incoming media status, but we aren't listening. %v", response)
 	}
 
 	return response.Status, nil
@@ -79,9 +70,9 @@ func (c *MediaController) GetStatus(timeout time.Duration) ([]*media.MediaStatus
 
 	spew.Dump("getting media Status")
 
-	message, err := c.channel.Request(&getMediaStatus, timeout)
+	message, err := c.connection.Request(&getMediaStatus, timeout)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get receiver status: %s", err)
+		return nil, fmt.Errorf("Failed to get media status: %s", err)
 	}
 
 	spew.Dump("got media Status", message)
@@ -94,6 +85,32 @@ func (c *MediaController) GetStatus(timeout time.Duration) ([]*media.MediaStatus
 func (c *MediaController) Load(url string, contentTypeString string, timeout time.Duration) (*api.CastMessage, error) {
 	//TODO should do something about messaging with the contenttype, so it works with different media types. so we can attach more metadata
 	//TODO also should be sending a message of type media data( should probably actually construct the request)
+	//c.GetStatus(defaultTimeout)
+	mediaData, err := c.constructMediaData(url, contentTypeString)
+	if err != nil {
+		return nil, err
+	}
+	loadCommand := c.constructLoadCommand(mediaData)
+
+	_, err = c.connection.Request(&loadCommand, timeout)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to send play command: %s", err)
+	}
+	fmt.Printf("There is no error")
+	return nil, nil
+}
+
+func (c *MediaController) constructLoadCommand(mediaData *media.MediaData) media.LoadCommand {
+	return media.LoadCommand{
+		PayloadHeaders: primitives.PayloadHeaders{Type: eventTypeLoad},
+		Media:          *mediaData,
+		Autoplay:       true,
+		CurrentTime:    0,
+		CustomData:     nil,
+	}
+}
+
+func (c *MediaController) constructMediaData(url string, contentTypeString string) (*media.MediaData, error) {
 	contentType, err := media.NewContentType(contentTypeString)
 	if err != nil {
 		return nil, err
@@ -110,30 +127,17 @@ func (c *MediaController) Load(url string, contentTypeString string, timeout tim
 	if err != nil {
 		return nil, err
 	}
-
-	_, err = c.channel.Request(&media.LoadCommand{
-		PayloadHeaders: primitives.PayloadHeaders{Type: eventTypeLoad},
-		Media:          mediaData,
-		Autoplay:       true,
-		CurrentTime:    0,
-		CustomData:     nil,
-	}, timeout)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to send play command: %s", err)
-	}
-	fmt.Printf("There is no error")
-	return nil, nil
+	return &mediaData, nil
 }
 
 //Play sends the play command so that the chromecast session is resumed
 func (c *MediaController) Play(timeout time.Duration) (*api.CastMessage, error) {
 
-	message, err := c.channel.Request(&media.MediaCommand{
-		PayloadHeaders: commandMediaPlay,
-		MediaSessionID: c.MediaSessionID}, timeout)
+	message, err := c.sendMessage(commandMediaPlay, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send play command: %s", err)
 	}
+	fmt.Printf("There is no error")
 
 	return message, nil
 }
@@ -141,22 +145,18 @@ func (c *MediaController) Play(timeout time.Duration) (*api.CastMessage, error) 
 //Pause sends the pause command to the chromecast
 func (c *MediaController) Pause(timeout time.Duration) (*api.CastMessage, error) {
 
-	message, err := c.channel.Request(&media.MediaCommand{
-		PayloadHeaders: commandMediaPause,
-		MediaSessionID: c.MediaSessionID}, timeout)
+	message, err := c.sendMessage(commandMediaPause, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send pause command: %s", err)
 	}
-
+	spew.Dump("Pause Command:", message.PayloadUtf8)
 	return message, nil
 }
 
 //Stop sends the stop command to the chromecast
 func (c *MediaController) Stop(timeout time.Duration) (*api.CastMessage, error) {
 
-	message, err := c.channel.Request(&media.MediaCommand{
-		PayloadHeaders: commandMediaStop,
-		MediaSessionID: c.MediaSessionID}, timeout)
+	message, err := c.sendMessage(commandMediaStop, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send stop command: %s", err)
 	}
@@ -174,4 +174,28 @@ func (c *MediaController) EnableSubtitles(timeout time.Duration) (*api.CastMessa
 //DisableSubtitles sends the disable subtitles command to the chromecast
 func (c *MediaController) DisableSubtitles(timeout time.Duration) (*api.CastMessage, error) {
 	return nil, nil
+}
+
+func (c *MediaController) sendMessage(payload primitives.PayloadHeaders, timeout time.Duration) (*api.CastMessage, error) {
+	c.updateForNewSession(timeout)
+	return c.connection.Request(&media.MediaCommand{
+		PayloadHeaders: payload,
+		MediaSessionID: c.MediaSessionID}, timeout)
+}
+
+//UpdateForNewSession refreshes the media controller for a new media session that's been executed.
+func (c *MediaController) updateForNewSession(timeout time.Duration) {
+	waitStatusCh := make(chan bool)
+	go func() {
+		status := <-c.Incoming
+		if len(status) <= 0 {
+			waitStatusCh <- false
+			return
+		}
+		c.MediaSessionID = status[0].MediaSessionID
+		waitStatusCh <- true
+	}()
+
+	c.GetStatus(timeout)
+	<-waitStatusCh
 }

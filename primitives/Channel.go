@@ -26,7 +26,7 @@ type channelListener struct {
 	callback     func(*api.CastMessage)
 }
 
-type hasRequestID interface {
+type HasRequestID interface {
 	setRequestID(id int)
 	getRequestID() int
 }
@@ -104,7 +104,7 @@ func (c *Channel) Send(payload interface{}) error {
 Request sends a payload and returns the message the chromecast gives back.
 Throws an error if timeout has passed waiting for the message to be returned.
 */
-func (c *Channel) Request(payload hasRequestID, timeout time.Duration) (*api.CastMessage, error) {
+func (c *Channel) Request(payload HasRequestID, timeout time.Duration) (*api.CastMessage, error) {
 
 	payload.setRequestID(c.counter.GetAndIncrement())
 

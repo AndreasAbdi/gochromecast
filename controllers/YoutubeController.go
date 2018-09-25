@@ -21,8 +21,6 @@ https://github.com/ur1katz/casttube/blob/master/casttube/YouTubeSession.py.
 Essentially, you start a session with the website, and the website/session handles  like any other receiver app.
 */
 
-const defaultTimeout = 10
-
 const youtubeBaseURL = "https://www.youtube.com/"
 const bindURL = youtubeBaseURL + "api/lounge/bc/bind"
 const loungeTokenURL = youtubeBaseURL + "api/lounge/pairing/get_lounge_token_batch"

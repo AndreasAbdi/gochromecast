@@ -1,11 +1,15 @@
 package controllers
 
+import (
+	"time"
+)
+
 /*
 After deliberation, this should probably contain configs that are separate from the actual media files. Mostly because I don't really know when google is going to change the API or status messages. Is it a good idea? IDK. suggestions from the internet are to keep constants as close as possible to their usages. That makes sense, but these are sorta related to the message formats that google are using, so I'm reluctant.
 */
 
 const receiverControllerNamespace string = "urn:x-cast:com.google.cast.receiver"
-const mediaControllerNamespace string = "urn:x-cast:com.google.cast.media"
+const MediaControllerNamespace string = "urn:x-cast:com.google.cast.media"
 const heartbeatControllerNamespace string = "urn:x-cast:com.google.cast.tp.heartbeat"
 const connectionControllerNamespace string = "urn:x-cast:com.google.cast.tp.connection"
 const dashcastControllerNamespace string = "urn:x-cast:com.madmod.dashcast"
@@ -37,3 +41,7 @@ const spotifyAppID string = "CC32E753"
 
 //back drop is a back drop of images usually displayed as the default for when you run your chromecast.
 const backdropAppID string = "E8C28D3C"
+const defaultTimeout = 10 * time.Second
+
+const defaultChromecastReceiverID = "receiver-0"
+const defaultChromecastSenderID = "sender-0"
