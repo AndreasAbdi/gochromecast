@@ -71,11 +71,11 @@ func (device *Device) QuitApplication(timeout time.Duration) {
 	}
 }
 
-//PlayMedia plays a video via the media controller.
-func (device *Device) TestYoutube(URL string) {
+//PlayYoutube launches the youtube app and tries to play the video based on its id.
+func (device *Device) PlayYoutubeVideo(videoID string) {
 	appID := configs.YoutubeAppID
 	device.ReceiverController.LaunchApplication(&appID, defaultTimeout, false)
-	device.YoutubeController.Test()
+	device.YoutubeController.PlayVideo(videoID)
 }
 
 func (device *Device) GetMediaStatus(timeout time.Duration) {

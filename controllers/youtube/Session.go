@@ -21,7 +21,7 @@ type Session struct {
 }
 
 //Bind a screen with a loungetoken and link operations to this session object.
-func (s *Session) Bind(screenID *string, loungeToken string) error {
+func (s *Session) Bind(screenID string, loungeToken string) error {
 	s.resetCounters()
 	requestID := s.requestCounter.GetAndIncrement()
 	request := CreateBindRequest(requestID, loungeToken)
@@ -30,8 +30,12 @@ func (s *Session) Bind(screenID *string, loungeToken string) error {
 	if err != nil {
 		return err
 	}
-	s.assignVariables(*screenID, loungeToken, sessionID, gSessionID)
+	s.assignVariables(screenID, loungeToken, sessionID, gSessionID)
 	return nil
+}
+
+//TODO: send a request for an action.
+func (s *Session) SendAction(actionType string, videoID string) {
 }
 
 func (s *Session) InitializeQueue(videoID string, listID string) {

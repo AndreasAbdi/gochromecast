@@ -1,15 +1,11 @@
 package controllers
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/controllers/youtube"
-	"github.com/AndreasAbdi/go-castv2/generic"
 	"github.com/davecgh/go-spew/spew"
 
 	"github.com/AndreasAbdi/go-castv2/api"
@@ -57,15 +53,11 @@ const defaultCount = 1
 
 //YoutubeController is the controller for the commands unique to the dashcast.
 type YoutubeController struct {
-	connection     *mediaConnection
-	screenID       string
-	sessionID      string
-	gSessionID     string
-	loungeID       string
-	incoming       chan *string
-	session        youtube.Session
-	requestCounter generic.Counter
-	sessionCounter generic.Counter
+	connection *mediaConnection
+	screenID   *string
+	loungeID   string
+	incoming   chan *string
+	session    *youtube.Session
 }
 
 //NewYoutubeController is a constructor for a dash cast controller.
@@ -83,92 +75,68 @@ type youtubeCommand struct {
 	primitives.PayloadHeaders
 }
 
-func (c *YoutubeController) Test() {
-	screenID, err := c.getScreenID(time.Second * 5)
-	if err != nil {
-		spew.Dump("Failed to get screen ID")
-		return
-	}
-	spew.Dump("Got screen ID", screenID)
-
-	loungeToken, err := youtube.GetLoungeToken(screenID)
-	c.loungeID = loungeToken
-	if err != nil {
-		spew.Dump("Failed to get lounge token")
-		return
-	}
-
-	c.session.Bind(screenID, loungeToken)
-	c.session.InitializeQueue("cwQgjq0mCdE", "")
-}
-
-//TODO
-func (c *YoutubeController) PlayVideo(videoID int) {
-
+//TODO : Do something with the list id
+//PlayVideo initializes a new queue and plays the video
+func (c *YoutubeController) PlayVideo(videoID string) {
+	c.ensureSessionActive()
+	c.session.InitializeQueue(videoID, "")
 }
 
 //PlayNext adds a video to be played next in the current playlist TODO
-func (c *YoutubeController) PlayNext(videoID int) {
-	c.sendAction(actionInsertVideo, videoID)
+func (c *YoutubeController) PlayNext(videoID string) {
+	c.ensureSessionActive()
+	c.session.SendAction(actionInsertVideo, videoID)
 }
 
 //AddToQueue adds the video to the end of the current playlist TODO
-func (c *YoutubeController) AddToQueue(videoID int) {
-	c.sendAction(actionAdd, videoID)
+func (c *YoutubeController) AddToQueue(videoID string) {
+	c.ensureSessionActive()
+	c.session.SendAction(actionAdd, videoID)
 
 }
 
 //RemoveFromQueue removes a video from the videoplaylist TODO
-func (c *YoutubeController) RemoveFromQueue(videoID int) {
-	c.sendAction(actionRemoveVideo, videoID)
+func (c *YoutubeController) RemoveFromQueue(videoID string) {
+	c.ensureSessionActive()
+	c.session.SendAction(actionRemoveVideo, videoID)
 }
 
-//TODO: send a request for an action.
-func (c *YoutubeController) sendAction(actionType string, videoID int) {
-	request, err := c.createActionRequest(actionType, videoID)
-	if err != nil {
-		//TODO
-		return
+func (c *YoutubeController) ensureSessionActive() {
+	if c.screenID == nil || c.session == nil {
+		err := c.updateScreenID()
+		if err != nil {
+			return
+		}
+		c.updateYoutubeSession()
 	}
-	c.sendRequest(&request)
 }
 
-func (c *YoutubeController) createActionRequest(actionType string, videoID int) (http.Request, error) {
-	request := http.Request{}
-	requestID := c.requestCounter.GetAndIncrement()
-	message := map[string]interface{}{
-		actionKey:  actionType,
-		videoIDKey: videoID,
-		countKey:   defaultCount,
-	}
-
-	messageInBytes, err := json.Marshal(message)
+func (c *YoutubeController) updateScreenID() error {
+	screenID, err := c.getScreenID(time.Second * 5)
 	if err != nil {
-		return request, err
+		spew.Dump("Failed to get screen ID")
+		return err
 	}
-	req, err := http.NewRequest("POST", bindURL, bytes.NewBuffer(messageInBytes))
-	if err != nil {
-		return request, err
-	}
-	req.Header.Set(loungeIDHeader, c.loungeID)
-	req.URL.Query().Add(sessionIDKey, c.sessionID)
-	req.URL.Query().Add(requestIDKey, strconv.Itoa(requestID))
-	req.URL.Query().Add(gSessionIDKey, c.gSessionID)
-	req.URL.Query().Add(cVersionKey, bindCVersion)
-	req.URL.Query().Add(versionKey, bindVersion)
-	return request, nil
+	c.screenID = screenID
+	return nil
 
 }
 
-func (c *YoutubeController) sendRequest(request *http.Request) {
-	client := &http.Client{}
-	response, err := client.Do(request)
+func (c *YoutubeController) updateYoutubeSession() error {
+	loungeToken, err := youtube.GetLoungeToken(c.screenID)
 	if err != nil {
-		panic(err)
+		spew.Dump("Failed to get lounge token")
+		return err
 	}
-	defer response.Body.Close()
+	c.loungeID = loungeToken
+	if c.session == nil {
+		sess := youtube.Session{}
+		c.session = &sess
+	}
 
+	return c.session.Bind(*c.screenID, loungeToken)
 }
+
 func (c *YoutubeController) onStatus(message *api.CastMessage) {
 	spew.Dump("Got youtube status message")
 	response := &youtube.ScreenStatus{}
@@ -204,6 +172,4 @@ func (c *YoutubeController) getScreenID(timeout time.Duration) (*string, error) 
 	case <-time.After(timeout):
 		return nil, errors.New("Failed to get screen ID, timed out")
 	}
-
-	return nil, errors.New("Shouldn't ever get here.")
 }
