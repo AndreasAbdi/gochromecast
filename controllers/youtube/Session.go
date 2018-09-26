@@ -34,19 +34,26 @@ func (s *Session) Bind(screenID string, loungeToken string) error {
 	return nil
 }
 
-//TODO: send a request for an action.
 func (s *Session) SendAction(actionType string, videoID string) {
+
+	actionParams := s.createActionRequestParameters(actionType, videoID)
+	request := CreateActionRequest(actionParams)
+	spew.Dump("Sending action", request)
+	_, err := request.Post()
+	if err != nil {
+		spew.Dump("Failed to send action", err)
+	}
+
 }
 
 func (s *Session) InitializeQueue(videoID string, listID string) {
-	requestParams := s.createInitializeQueueRequestParams(videoID, listID)
+	requestParams := s.createInitializeQueueRequestParameters(videoID, listID)
 	request := CreateInitializeQueueRequest(requestParams)
 	spew.Dump("Request info", request)
-	response, err := request.Post()
+	_, err := request.Post()
 	if err != nil {
-		spew.Dump("Failed to initialize queue")
+		spew.Dump("Failed to initialize queue:", err)
 	}
-	spew.Dump("Got response", response)
 }
 
 func (s *Session) resetCounters() {
@@ -60,7 +67,19 @@ func (s *Session) assignVariables(screenID string, loungeToken string, sessionID
 	s.screenID = screenID
 	s.loungeID = loungeToken
 }
-func (s *Session) createInitializeQueueRequestParams(videoID string, listID string) InitializeQueueRequestParams {
+func (s *Session) createActionRequestParameters(videoID string, actionID string) ActionRequestParameters {
+	return ActionRequestParameters{
+		VideoID:             videoID,
+		actionID:            actionID,
+		LoungeID:            s.loungeID,
+		RequestCount:        s.requestCounter.GetAndIncrement(),
+		SessionRequestCount: s.sessionCounter.GetAndIncrement(),
+		SessionID:           s.sessionID,
+		GSessionID:          s.gSessionID,
+	}
+}
+
+func (s *Session) createInitializeQueueRequestParameters(videoID string, listID string) InitializeQueueRequestParams {
 	return InitializeQueueRequestParams{
 		VideoID:             videoID,
 		ListID:              listID,

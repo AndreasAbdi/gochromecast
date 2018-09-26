@@ -122,6 +122,7 @@ func (c *YoutubeController) updateScreenID() error {
 
 }
 
+//TODO Move the lounge token grab from here to somewhere else
 func (c *YoutubeController) updateYoutubeSession() error {
 	loungeToken, err := youtube.GetLoungeToken(c.screenID)
 	if err != nil {
