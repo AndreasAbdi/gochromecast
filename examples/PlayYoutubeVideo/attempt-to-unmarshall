@@ -1,0 +1,146 @@
+package main
+
+import (
+	"encoding/json"
+	"strings"
+
+	"github.com/davecgh/go-spew/spew"
+)
+
+type commandData struct {
+	commandType string
+	extraInfo   interface{}
+}
+
+func (c *commandData) UnmarshalJSON(b []byte) error {
+	var raw []interface{}
+	spew.Dump(string(b))
+	err := json.Unmarshal(b, &raw)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range raw {
+		valString, isString := v.(string)
+		if isString {
+			c.commandType = valString
+		} else {
+			c.extraInfo = v
+		}
+	}
+	return nil
+}
+
+type command struct {
+	index int
+	data  commandData
+}
+
+func (c *command) UnmarshalJSON(b []byte) error {
+	var raw []interface{}
+	spew.Dump(string(b))
+	err := json.Unmarshal(b, &raw)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range raw {
+		valFloat, isFloat := v.(int)
+		if isFloat {
+			c.index = valFloat
+		} else {
+			var cmdData []interface{}
+			marshall, err := json.Marshal(v)
+			if err != nil {
+				return err
+			}
+			json.Unmarshal(marshall, &cmdData)
+		}
+	}
+	return nil
+}
+
+type element struct {
+	data command
+}
+
+func (e *element) UnmarshalJSON(b []byte) error {
+	var raw []interface{}
+	spew.Dump(string(b))
+	err := json.Unmarshal(b, &raw)
+	if err != nil {
+		return err
+	}
+	cmd := command{}
+	for _, v := range raw {
+		valFloat, isFloat := v.(int)
+		switch k := v.(type) {
+		default:
+			spew.Dump("Yahahah", k)
+		}
+		if isFloat {
+			cmd.index = valFloat
+		} else {
+			marshall, err := json.Marshal(v)
+			if err != nil {
+				return err
+			}
+			err = json.Unmarshal(marshall, &cmd)
+			if err != nil {
+				return err
+			}
+			e.data = cmd
+		}
+	}
+	e.data = cmd
+	return nil
+}
+
+type data struct {
+	elements []element
+}
+
+func (d *data) UnmarshalJSON(b []byte) error {
+	var raw []element
+	err := json.Unmarshal(b, &raw)
+	if err != nil {
+		return err
+	}
+	d.elements = raw
+	return nil
+}
+
+// A simple example, showing how to play a youtube video.
+func main() {
+	// devices := make(chan *castv2.Device, 100)
+	// castv2.FindDevices(time.Second*5, devices)
+	// for device := range devices {
+	// 	appID := configs.YoutubeAppID
+	// 	device.ReceiverController.LaunchApplication(&appID, time.Second*5, false)
+	// 	device.YoutubeController.Test()
+	// 	//device.TestYoutube("some fake url")
+	// }
+
+	parseString := "892\n[[0,[\"c\",\"19AB39151763497F\",\"\",8]\n]\n,[1,[\"S\",\"d6CNYWDUZb40UcroBuzH6QZJti79F-mc\"]]\n,[2,[\"loungeStatus\",{\"devices\":\"[{\\\"app\\\":\\\"lb-v4\\\",\\\"capabilities\\\":\\\"dsp,que,mus\\\",\\\"clientName\\\":\\\"tvhtml5\\\",\\\"experiments\\\":\\\"\\\",\\\"name\\\":\\\"Chromecast\\\",\\\"id\\\":\\\"1ed072b4-b75a-4878-88d0-fe9e6625d9ec\\\",\\\"type\\\":\\\"LOUNGE_SCREEN\\\",\\\"hasCc\\\":\\\"true\\\"},{\\\"app\\\":\\\"GOCAST_REMOTE_APP\\\",\\\"pairingType\\\":\\\"cast\\\",\\\"capabilities\\\":\\\"que,mus\\\",\\\"clientName\\\":\\\"unknown\\\",\\\"experiments\\\":\\\"\\\",\\\"name\\\":\\\"21b78ce1-4311-4c5e-8ef5-0101eddf5671\\\",\\\"remoteControllerUrl\\\":\\\"\\\",\\\"id\\\":\\\"21b78ce1-4311-4c5e-8ef5-0101eddf5671\\\",\\\"type\\\":\\\"REMOTE_CONTROL\\\",\\\"localChannelEncryptionKey\\\":\\\"wMphRtC_eiqqMvJk61EWvN-k1rA7IA72NzG2KMqPxPU\\\"}]\"}]]\n,[3,[\"playlistModified\",{\"videoIds\":\"\"}]]\n,[4,[\"onAutoplayModeChanged\",{\"autoplayMode\":\"UNSUPPORTED\"}]]\n,[5,[\"onPlaylistModeChanged\",{\"shuffleEnabled\":\"false\",\"loopEnabled\":\"false\"}]]\n]\n"
+	spew.Dump(len(parseString))
+	parts := strings.SplitN(parseString, "\n", 2)
+
+	spew.Dump("message length is %v", parts[0])
+	spew.Dump("remaining message is parts: %v", parts[1])
+	part2 := "[[0, \"hihi\"], [1, \"bybye\"]]\n"
+	//part3 := "[[0,[\"c\",\"19AB39151763497F\",\"\",8]\n]\n,[1,[\"S\",\"d6CNYWDUZb40UcroBuzH6QZJti79F-mc\"]]]"
+	var anySlice []interface{}
+	//var anySlice2 []interface{}
+
+	ghwe := data{}
+	json.Unmarshal([]byte(parts[1]), &anySlice)
+	json.Unmarshal([]byte(part2), &ghwe)
+	spew.Dump(anySlice)
+	sessionId := anySlice[0]
+	spew.Dump(sessionId)
+	spew.Dump(ghwe)
+	//parseString := []byte("{\"screens\":[{\"screenId\":\"4dnsm3coi2p9psaiugc548lv96\",\"loungeToken\":\"AGdO5p_E-j5833kbaHb8mupgjxgS-J0ovj1dTosF1BsSm_J7s4DQZ_MjoqnDUl-wO7laDweBu6kSHwRrir0S4bGfl7CXskMpmdlB-VVkmQc7-lBJvT7kExs\",\"expiration\":1539027648154}]}")
+	// tokenResponse := &youtube.LoungeTokenResponse{}
+	// json.Unmarshal(parseString, tokenResponse)
+	// spew.Dump(tokenResponse)
+}
