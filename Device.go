@@ -20,6 +20,7 @@ type Device struct {
 	connectionController *controllers.ConnectionController
 	ReceiverController   *controllers.ReceiverController
 	MediaController      *controllers.MediaController
+	YoutubeController    *controllers.YoutubeController
 }
 
 //NewDevice is constructor for Device struct
@@ -42,6 +43,8 @@ func NewDevice(host net.IP, port int) (Device, error) {
 	device.ReceiverController = controllers.NewReceiverController(client, defaultChromecastSenderID, defaultChromecastReceiverID)
 
 	device.MediaController = controllers.NewMediaController(client, defaultChromecastSenderID, device.ReceiverController)
+
+	device.YoutubeController = controllers.NewYoutubeController(client, defaultChromecastSenderID, device.ReceiverController)
 	return device, nil
 }
 
@@ -70,8 +73,9 @@ func (device *Device) QuitApplication(timeout time.Duration) {
 
 //PlayMedia plays a video via the media controller.
 func (device *Device) TestYoutube(URL string) {
-	appID := configs.SpotifyAppID
+	appID := configs.YoutubeAppID
 	device.ReceiverController.LaunchApplication(&appID, defaultTimeout, false)
+	device.YoutubeController.Test()
 }
 
 func (device *Device) GetMediaStatus(timeout time.Duration) {

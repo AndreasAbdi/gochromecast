@@ -24,6 +24,13 @@ func (counter *Counter) Get() int {
 	return counter.value
 }
 
+//Reset sets the counter back to 0
+func (counter *Counter) Reset() {
+	counter.mutex.Lock()
+	defer counter.mutex.Unlock()
+	counter.value = 0
+}
+
 //ChCounter is an atomic counter that requires users to get the value via subscribing to an outputs channel.
 type ChCounter struct {
 	value     int
