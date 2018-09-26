@@ -13,6 +13,7 @@ const requestIDKey = "RID"
 const sessionIDKey = "SID"
 const versionKey = "VER"
 const cVersionKey = "CVER"
+const gSessionIDKey = "gsessionid"
 
 const bindVersion = "8"
 const bindCVersion = "1"

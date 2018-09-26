@@ -1,0 +1,75 @@
+package youtube
+
+import (
+	"net/url"
+	"strconv"
+
+	"github.com/AndreasAbdi/go-castv2/generic"
+	"github.com/imroc/req"
+)
+
+const actionSetPlaylist = "setPlaylist"
+
+//components for the initializeQueueRequest parameters and body
+const listIDKey = "_listId"
+const actionKey = "__sc"
+const currentTimeKey = "_currentTime"
+const currentIndexKey = "_currentIndex"
+const audioOnlyKey = "_audioOnly"
+const countKey = "count"
+const videoIDKey = "_videoId"
+
+const defaultTime = "0"
+const defaultIndex = -1
+const defaultAudioOnlySetting = "false"
+const defaultCount = 1
+
+type InitializeQueueRequestParams struct {
+	VideoID             string
+	ListID              string
+	LoungeID            string
+	RequestCount        int
+	SessionRequestCount int
+	SessionID           string
+	GSessionID          string
+}
+
+func CreateInitializeQueueRequest(params InitializeQueueRequestParams) generic.RequestComponents {
+	requestCount := params.RequestCount
+	header := req.Header{
+		loungeIDHeader: params.LoungeID,
+	}
+
+	for k, v := range defaultHeaders {
+		header[k] = v
+	}
+
+	reqParams := req.Param{
+		sessionIDKey:  params.SessionID,
+		gSessionIDKey: params.GSessionID,
+		requestIDKey:  requestCount,
+		versionKey:    bindVersion,
+		cVersionKey:   bindCVersion,
+	}
+	index := strconv.Itoa(defaultIndex)
+	count := strconv.Itoa(defaultCount)
+	body := map[string][]string{
+		listIDKey:       []string{params.ListID},
+		actionKey:       []string{actionSetPlaylist},
+		currentTimeKey:  []string{defaultTime},
+		currentIndexKey: []string{index},
+		audioOnlyKey:    []string{defaultAudioOnlySetting},
+		videoIDKey:      []string{params.VideoID},
+		countKey:        []string{count},
+	}
+	//spew.Dump("body", body)
+	formattedBody := FormatSessionParameters(body, params.SessionRequestCount)
+	//spew.Dump("Formatted body", formattedBody)
+	return generic.RequestComponents{
+		URL:    bindURL,
+		Header: header,
+		Params: reqParams,
+		Body:   url.Values(formattedBody).Encode(),
+	}
+
+}

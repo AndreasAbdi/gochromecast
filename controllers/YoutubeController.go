@@ -5,11 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"net/url"
 	"strconv"
 	"time"
-
-	"github.com/imroc/req"
 
 	"github.com/AndreasAbdi/go-castv2/controllers/youtube"
 	"github.com/AndreasAbdi/go-castv2/generic"
@@ -34,10 +31,6 @@ const youtubeBaseURL = "https://www.youtube.com/"
 const bindURL = youtubeBaseURL + "api/lounge/bc/bind"
 const loungeTokenURL = youtubeBaseURL + "api/lounge/pairing/get_lounge_token_batch"
 
-var defaultHeaders = map[string]string{
-	"Origin":       youtubeBaseURL,
-	"Content-Type": "application/x-www-form-urlencoded"}
-
 const loungeIDHeader = "X-YouTube-LoungeId-Token"
 
 var messageTypeGetSessionID = "getMdxSessionStatus"
@@ -56,18 +49,10 @@ const cVersionKey = "CVER"
 const requestIDKey = "RID"
 const sessionIDKey = "SID"
 const versionKey = "VER"
-
-const listIDKey = "_listId"
 const actionKey = "__sc"
-const currentTimeKey = "_currentTime"
-const currentIndexKey = "_currentIndex"
-const audioOnlyKey = "_audioOnly"
 const countKey = "count"
 const videoIDKey = "_videoId"
 
-const defaultTime = "0"
-const defaultIndex = -1
-const defaultAudioOnlySetting = "false"
 const defaultCount = 1
 
 //YoutubeController is the controller for the commands unique to the dashcast.
@@ -201,7 +186,8 @@ func (c *YoutubeController) sendRequest(request *http.Request) {
 }
 
 func (c *YoutubeController) initializeQueue(videoID string, listID string) {
-	request := c.createInitializeQueueRequest(videoID, listID)
+	requestParams := c.CreateInitializeQueueRequestParams(videoID, listID)
+	request := youtube.CreateInitializeQueueRequest(requestParams)
 	spew.Dump("Request info", request)
 	response, err := request.Post()
 	if err != nil {
@@ -210,45 +196,16 @@ func (c *YoutubeController) initializeQueue(videoID string, listID string) {
 	spew.Dump("Got response", response)
 }
 
-//TODO
-func (c *YoutubeController) createInitializeQueueRequest(videoID string, listID string) generic.RequestComponents {
-	requestCount := c.requestCounter.GetAndIncrement()
-	header := req.Header{
-		loungeIDHeader: c.loungeID,
+func (c *YoutubeController) CreateInitializeQueueRequestParams(videoID string, listID string) youtube.InitializeQueueRequestParams {
+	return youtube.InitializeQueueRequestParams{
+		VideoID:             videoID,
+		ListID:              listID,
+		LoungeID:            c.loungeID,
+		RequestCount:        c.requestCounter.GetAndIncrement(),
+		SessionRequestCount: c.sessionCounter.GetAndIncrement(),
+		SessionID:           c.sessionID,
+		GSessionID:          c.gSessionID,
 	}
-
-	for k, v := range defaultHeaders {
-		header[k] = v
-	}
-
-	params := req.Param{
-		sessionIDKey:  c.sessionID,
-		gSessionIDKey: c.gSessionID,
-		requestIDKey:  requestCount,
-		versionKey:    bindVersion,
-		cVersionKey:   bindCVersion,
-	}
-	index := strconv.Itoa(defaultIndex)
-	count := strconv.Itoa(defaultCount)
-	body := map[string][]string{
-		listIDKey:       []string{listID},
-		actionKey:       []string{actionSetPlaylist},
-		currentTimeKey:  []string{defaultTime},
-		currentIndexKey: []string{index},
-		audioOnlyKey:    []string{defaultAudioOnlySetting},
-		videoIDKey:      []string{videoID},
-		countKey:        []string{count},
-	}
-	spew.Dump("body", body)
-	formattedBody := youtube.FormatSessionParameters(body, c.sessionCounter.GetAndIncrement())
-	spew.Dump("Formatted body", formattedBody)
-	return generic.RequestComponents{
-		URL:    bindURL,
-		Header: header,
-		Params: params,
-		Body:   url.Values(formattedBody).Encode(),
-	}
-
 }
 
 func (c *YoutubeController) onStatus(message *api.CastMessage) {
