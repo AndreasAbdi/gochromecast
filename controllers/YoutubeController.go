@@ -63,6 +63,7 @@ type YoutubeController struct {
 	gSessionID     string
 	loungeID       string
 	incoming       chan *string
+	session        youtube.Session
 	requestCounter generic.Counter
 	sessionCounter generic.Counter
 }
@@ -97,8 +98,8 @@ func (c *YoutubeController) Test() {
 		return
 	}
 
-	c.bind(screenID, loungeToken)
-	c.initializeQueue("cwQgjq0mCdE", "")
+	c.session.Bind(screenID, loungeToken)
+	c.session.InitializeQueue("cwQgjq0mCdE", "")
 }
 
 func (c *YoutubeController) bind(screenID *string, loungeToken string) error {
