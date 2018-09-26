@@ -9,8 +9,8 @@ import (
 
 const screenIDsKey = "screen_ids"
 
-func GetLoungeToken(screenID *string) (string, error) {
-	payload := url.Values{screenIDsKey: {*screenID}}.Encode()
+func GetLoungeToken(screenID string) (string, error) {
+	payload := url.Values{screenIDsKey: {screenID}}.Encode()
 	response, err := req.Post(
 		loungeTokenURL,
 		req.Header(defaultHeaders),

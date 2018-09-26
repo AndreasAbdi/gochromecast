@@ -55,7 +55,6 @@ const defaultCount = 1
 type YoutubeController struct {
 	connection *mediaConnection
 	screenID   *string
-	loungeID   string
 	incoming   chan *string
 	session    *youtube.Session
 }
@@ -124,18 +123,11 @@ func (c *YoutubeController) updateScreenID() error {
 
 //TODO Move the lounge token grab from here to somewhere else
 func (c *YoutubeController) updateYoutubeSession() error {
-	loungeToken, err := youtube.GetLoungeToken(c.screenID)
-	if err != nil {
-		spew.Dump("Failed to get lounge token")
-		return err
-	}
-	c.loungeID = loungeToken
 	if c.session == nil {
-		sess := youtube.Session{}
-		c.session = &sess
+		c.session = youtube.NewSession(*c.screenID)
 	}
 
-	return c.session.Bind(*c.screenID, loungeToken)
+	return c.session.StartSession()
 }
 
 func (c *YoutubeController) onStatus(message *api.CastMessage) {
