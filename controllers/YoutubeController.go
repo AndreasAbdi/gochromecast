@@ -102,22 +102,6 @@ func (c *YoutubeController) Test() {
 	c.session.InitializeQueue("cwQgjq0mCdE", "")
 }
 
-func (c *YoutubeController) bind(screenID *string, loungeToken string) error {
-	c.requestCounter.Reset()
-	c.sessionCounter.Reset()
-	requestID := c.requestCounter.GetAndIncrement()
-	request := youtube.CreateBindRequest(requestID, loungeToken)
-	response, err := request.Post()
-	sessionID, gSessionID, err := youtube.ParseResponse(response)
-	if err != nil {
-		return err
-	}
-	c.sessionID = sessionID
-	c.gSessionID = gSessionID
-	//assign self data to sid and gsiddata.
-	return nil
-}
-
 //TODO
 func (c *YoutubeController) PlayVideo(videoID int) {
 
@@ -185,30 +169,6 @@ func (c *YoutubeController) sendRequest(request *http.Request) {
 	defer response.Body.Close()
 
 }
-
-func (c *YoutubeController) initializeQueue(videoID string, listID string) {
-	requestParams := c.CreateInitializeQueueRequestParams(videoID, listID)
-	request := youtube.CreateInitializeQueueRequest(requestParams)
-	spew.Dump("Request info", request)
-	response, err := request.Post()
-	if err != nil {
-		spew.Dump("Failed to initialize queue")
-	}
-	spew.Dump("Got response", response)
-}
-
-func (c *YoutubeController) CreateInitializeQueueRequestParams(videoID string, listID string) youtube.InitializeQueueRequestParams {
-	return youtube.InitializeQueueRequestParams{
-		VideoID:             videoID,
-		ListID:              listID,
-		LoungeID:            c.loungeID,
-		RequestCount:        c.requestCounter.GetAndIncrement(),
-		SessionRequestCount: c.sessionCounter.GetAndIncrement(),
-		SessionID:           c.sessionID,
-		GSessionID:          c.gSessionID,
-	}
-}
-
 func (c *YoutubeController) onStatus(message *api.CastMessage) {
 	spew.Dump("Got youtube status message")
 	response := &youtube.ScreenStatus{}
