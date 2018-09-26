@@ -66,7 +66,7 @@ func (s *Session) sendAction(actionType string, videoID string) {
 	}
 
 	actionParams := s.createActionRequestParameters(actionType, videoID)
-	request := CreateActionRequest(actionParams)
+	request := createActionRequest(actionParams)
 	//spew.Dump("[YOUTUBE] Sending action", request)
 	response, err := request.Post()
 	if err != nil {
@@ -79,7 +79,7 @@ func (s *Session) sendAction(actionType string, videoID string) {
 //InitializeQueue restarts the playlist to something else.
 func (s *Session) InitializeQueue(videoID string, listID string) {
 	requestParams := s.createInitializeQueueRequestParameters(videoID, listID)
-	request := CreateInitializeQueueRequest(requestParams)
+	request := createInitializeQueueRequest(requestParams)
 	//spew.Dump("[YOUTUBE] Sending Initialize Queue", request)
 	response, err := request.Post()
 	if err != nil {
@@ -121,8 +121,8 @@ func (s *Session) assignVariables(screenID string, loungeToken string, sessionID
 	s.loungeID = &loungeToken
 }
 
-func (s *Session) createActionRequestParameters(actionID string, videoID string) ActionRequestParameters {
-	return ActionRequestParameters{
+func (s *Session) createActionRequestParameters(actionID string, videoID string) actionRequestParameters {
+	return actionRequestParameters{
 		VideoID:             videoID,
 		ActionID:            actionID,
 		LoungeID:            *s.loungeID,
@@ -133,8 +133,8 @@ func (s *Session) createActionRequestParameters(actionID string, videoID string)
 	}
 }
 
-func (s *Session) createInitializeQueueRequestParameters(videoID string, listID string) InitializeQueueRequestParams {
-	return InitializeQueueRequestParams{
+func (s *Session) createInitializeQueueRequestParameters(videoID string, listID string) initializeQueueRequestParams {
+	return initializeQueueRequestParams{
 		VideoID:             videoID,
 		ListID:              listID,
 		LoungeID:            *s.loungeID,
@@ -146,7 +146,7 @@ func (s *Session) createInitializeQueueRequestParameters(videoID string, listID 
 }
 
 func (s *Session) setLoungeID(screenID string) error {
-	loungeToken, err := GetLoungeToken(screenID)
+	loungeToken, err := getLoungeToken(screenID)
 	if err != nil {
 		spew.Dump("Failed to get lounge token")
 		return err

@@ -24,7 +24,7 @@ const defaultIndex = -1
 const defaultAudioOnlySetting = "false"
 const defaultCount = 1
 
-type InitializeQueueRequestParams struct {
+type initializeQueueRequestParams struct {
 	VideoID             string
 	ListID              string
 	LoungeID            string
@@ -34,7 +34,7 @@ type InitializeQueueRequestParams struct {
 	GSessionID          string
 }
 
-func CreateInitializeQueueRequest(params InitializeQueueRequestParams) generic.RequestComponents {
+func createInitializeQueueRequest(params initializeQueueRequestParams) generic.RequestComponents {
 	requestCount := params.RequestCount
 	header := req.Header{
 		loungeIDHeader: params.LoungeID,

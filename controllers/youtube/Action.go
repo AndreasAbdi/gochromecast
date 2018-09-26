@@ -8,7 +8,7 @@ import (
 	"github.com/imroc/req"
 )
 
-type ActionRequestParameters struct {
+type actionRequestParameters struct {
 	VideoID             string
 	ActionID            string
 	LoungeID            string
@@ -19,7 +19,7 @@ type ActionRequestParameters struct {
 }
 
 //CreateActionRequest to be sent to active session.
-func CreateActionRequest(params ActionRequestParameters) generic.RequestComponents {
+func createActionRequest(params actionRequestParameters) generic.RequestComponents {
 	requestCount := params.RequestCount
 	header := req.Header{
 		loungeIDHeader: params.LoungeID,
