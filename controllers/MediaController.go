@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -19,6 +20,7 @@ Use it to enable or disable subtitles.
 */
 type MediaController struct {
 	connection     *mediaConnection
+	currentStatus  *media.MediaStatus
 	Incoming       chan []*media.MediaStatus
 	MediaSessionID int
 }
@@ -34,6 +36,7 @@ var commandMediaSeek = primitives.PayloadHeaders{Type: "SEEK"}
 var commandSetSubtitles = primitives.PayloadHeaders{Type: "EDIT_TRACKS_INFO"}
 
 const responseTypeMediaStatus = "MEDIA_STATUS"
+const skipTimeBuffer = -5
 
 //NewMediaController is the constructors for the media controller
 func NewMediaController(client *primitives.Client, sourceID string, receiverController *ReceiverController) *MediaController {
@@ -50,7 +53,7 @@ func NewMediaController(client *primitives.Client, sourceID string, receiverCont
 }
 
 func (c *MediaController) onStatus(message *api.CastMessage) ([]*media.MediaStatus, error) {
-	//spew.Dump("Got media status message", message)
+	spew.Dump("[MEDIA] Got media status message", message)
 
 	response := &media.MediaStatusResponse{}
 
@@ -139,6 +142,31 @@ func (c *MediaController) Previous(timeout time.Duration) (*api.CastMessage, err
 	return c.sendCommand(commandMediaPrevious, timeout)
 }
 
+//Rewind to the beginning.
+func (c *MediaController) Rewind(timeout time.Duration) (*api.CastMessage, error) {
+	//
+	return c.Seek(0, timeout)
+}
+
+//Skip to the end
+func (c *MediaController) Skip(timeout time.Duration) (*api.CastMessage, error) {
+	if c.currentStatus == nil {
+		return nil, errors.New("No media playing, can't skip")
+	}
+	return c.Seek(c.currentStatus.CurrentTime-5, timeout)
+}
+
+//Seek to some time in the video
+func (c *MediaController) Seek(seconds float64, timeout time.Duration) (*api.CastMessage, error) {
+	seekCommand := media.CreateSeekCommand(seconds)
+	_, err := c.connection.Request(&seekCommand, timeout)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to send play command: %s", err)
+	}
+	fmt.Printf("There is no error")
+	return nil, nil
+}
+
 func (c *MediaController) sendCommand(command primitives.PayloadHeaders, timeout time.Duration) (*api.CastMessage, error) {
 	message, err := c.sendMessage(command, timeout)
 	if err != nil {
@@ -197,6 +225,7 @@ func (c *MediaController) updateForNewSession(timeout time.Duration) {
 			return
 		}
 		c.MediaSessionID = status[0].MediaSessionID
+		c.currentStatus = status[0]
 		waitStatusCh <- true
 	}()
 
