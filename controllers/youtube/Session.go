@@ -11,6 +11,10 @@ import (
 
 const requestPrefixFormat = "req%d"
 
+const actionRemoveVideo = "removeVideo"
+const actionInsertVideo = "insertVideo"
+const actionAddVideo = "addVideo"
+
 //Session represents a connection to the youtube chromecast api.
 type Session struct {
 	screenID       string
@@ -21,6 +25,7 @@ type Session struct {
 	sessionCounter generic.Counter
 }
 
+//NewSession constructs a new session object
 func NewSession(screenID string) *Session {
 	session := Session{
 		screenID: screenID,
@@ -38,8 +43,23 @@ func (s *Session) StartSession() error {
 	return s.bindAndSetVars(s.screenID, *s.loungeID)
 }
 
+//PlayNext adds a video to be played next in the current playlist
+func (s *Session) PlayNext(videoID string) {
+	s.sendAction(actionInsertVideo, videoID)
+}
+
+//AddToQueue adds the video to the end of the current playlist
+func (s *Session) AddToQueue(videoID string) {
+	s.sendAction(actionAddVideo, videoID)
+}
+
+//RemoveFromQueue removes a video from the videoplaylist TODO
+func (s *Session) RemoveFromQueue(videoID string) {
+	s.sendAction(actionRemoveVideo, videoID)
+}
+
 //SendAction sends an action command.
-func (s *Session) SendAction(actionType string, videoID string) {
+func (s *Session) sendAction(actionType string, videoID string) {
 	err := s.ensureSessionActive()
 	if err != nil {
 		spew.Dump("Failed to send action", err)
@@ -47,10 +67,10 @@ func (s *Session) SendAction(actionType string, videoID string) {
 
 	actionParams := s.createActionRequestParameters(actionType, videoID)
 	request := CreateActionRequest(actionParams)
-	spew.Dump("Sending action", request)
+	//spew.Dump("[YOUTUBE] Sending action", request)
 	response, err := request.Post()
 	if err != nil {
-		spew.Dump("Failed to send action", err)
+		spew.Dump("[YOUTUBE] Failed to send action", err)
 		return
 	}
 	s.handleBadResponse(response)
@@ -60,14 +80,13 @@ func (s *Session) SendAction(actionType string, videoID string) {
 func (s *Session) InitializeQueue(videoID string, listID string) {
 	requestParams := s.createInitializeQueueRequestParameters(videoID, listID)
 	request := CreateInitializeQueueRequest(requestParams)
-	spew.Dump("Request info", request)
+	//spew.Dump("[YOUTUBE] Sending Initialize Queue", request)
 	response, err := request.Post()
 	if err != nil {
-		spew.Dump("Failed to initialize queue:", err)
+		spew.Dump("[YOUTUBE] Failed to initialize queue:", err)
 		return
 	}
 	s.handleBadResponse(response)
-
 }
 
 func (s *Session) bindAndSetVars(screenID string, loungeID string) error {
@@ -102,10 +121,10 @@ func (s *Session) assignVariables(screenID string, loungeToken string, sessionID
 	s.loungeID = &loungeToken
 }
 
-func (s *Session) createActionRequestParameters(videoID string, actionID string) ActionRequestParameters {
+func (s *Session) createActionRequestParameters(actionID string, videoID string) ActionRequestParameters {
 	return ActionRequestParameters{
 		VideoID:             videoID,
-		actionID:            actionID,
+		ActionID:            actionID,
 		LoungeID:            *s.loungeID,
 		RequestCount:        s.requestCounter.GetAndIncrement(),
 		SessionRequestCount: s.sessionCounter.GetAndIncrement(),
@@ -139,9 +158,9 @@ func (s *Session) setLoungeID(screenID string) error {
 func (s *Session) ensureSessionActive() error {
 	if s.inSession() {
 		return s.StartSession()
-	} else {
-		return s.bindAndSetVars(s.screenID, *s.loungeID)
 	}
+	return s.bindAndSetVars(s.screenID, *s.loungeID)
+
 }
 
 func (s *Session) inSession() bool {

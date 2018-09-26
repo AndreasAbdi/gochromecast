@@ -10,7 +10,7 @@ import (
 
 type ActionRequestParameters struct {
 	VideoID             string
-	actionID            string
+	ActionID            string
 	LoungeID            string
 	RequestCount        int
 	SessionRequestCount int
@@ -39,7 +39,7 @@ func CreateActionRequest(params ActionRequestParameters) generic.RequestComponen
 
 	count := strconv.Itoa(defaultCount)
 	body := map[string][]string{
-		actionKey:  []string{params.actionID},
+		actionKey:  []string{params.ActionID},
 		videoIDKey: []string{params.VideoID},
 		countKey:   []string{count},
 	}

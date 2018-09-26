@@ -23,33 +23,10 @@ https://github.com/mutantmonkey/youtube-remote/blob/master/remote.py
 Essentially, you start a session with the website, and the website/session handles  like any other receiver app.
 */
 
-const youtubeBaseURL = "https://www.youtube.com/"
-const bindURL = youtubeBaseURL + "api/lounge/bc/bind"
-const loungeTokenURL = youtubeBaseURL + "api/lounge/pairing/get_lounge_token_batch"
-
 const loungeIDHeader = "X-YouTube-LoungeId-Token"
 
 var messageTypeGetSessionID = "getMdxSessionStatus"
 var responseTypeSessionStatus = "mdxSessionStatus"
-
-const actionSetPlaylist = "setPlaylist"
-const actionRemoveVideo = "removeVideo"
-const actionInsertVideo = "insertVideo"
-const actionAdd = "addVideo"
-
-const bindVersion = "8"
-const bindCVersion = "1"
-
-const gSessionIDKey = "gsessionid"
-const cVersionKey = "CVER"
-const requestIDKey = "RID"
-const sessionIDKey = "SID"
-const versionKey = "VER"
-const actionKey = "__sc"
-const countKey = "count"
-const videoIDKey = "_videoId"
-
-const defaultCount = 1
 
 //YoutubeController is the controller for the commands unique to the dashcast.
 type YoutubeController struct {
@@ -84,20 +61,19 @@ func (c *YoutubeController) PlayVideo(videoID string) {
 //PlayNext adds a video to be played next in the current playlist TODO
 func (c *YoutubeController) PlayNext(videoID string) {
 	c.ensureSessionActive()
-	c.session.SendAction(actionInsertVideo, videoID)
+	c.session.PlayNext(videoID)
 }
 
 //AddToQueue adds the video to the end of the current playlist TODO
 func (c *YoutubeController) AddToQueue(videoID string) {
 	c.ensureSessionActive()
-	c.session.SendAction(actionAdd, videoID)
-
+	c.session.AddToQueue(videoID)
 }
 
 //RemoveFromQueue removes a video from the videoplaylist TODO
 func (c *YoutubeController) RemoveFromQueue(videoID string) {
 	c.ensureSessionActive()
-	c.session.SendAction(actionRemoveVideo, videoID)
+	c.session.RemoveFromQueue(videoID)
 }
 
 func (c *YoutubeController) ensureSessionActive() {
@@ -121,7 +97,6 @@ func (c *YoutubeController) updateScreenID() error {
 
 }
 
-//TODO Move the lounge token grab from here to somewhere else
 func (c *YoutubeController) updateYoutubeSession() error {
 	if c.session == nil {
 		c.session = youtube.NewSession(*c.screenID)
@@ -151,7 +126,7 @@ func (c *YoutubeController) getScreenID(timeout time.Duration) (*string, error) 
 	waitCh := make(chan bool)
 	var screenID *string
 	go func() {
-		spew.Dump("Listening for incoming youtube status")
+		//spew.Dump("Listening for incoming youtube status")
 		screenID = <-c.incoming
 		waitCh <- true
 	}()
