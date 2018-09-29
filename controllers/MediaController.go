@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/imdario/mergo"
+
 	"github.com/AndreasAbdi/go-castv2/api"
 	"github.com/AndreasAbdi/go-castv2/controllers/media"
 	"github.com/AndreasAbdi/go-castv2/primitives"
@@ -62,7 +64,8 @@ func (c *MediaController) onStatus(message *api.CastMessage) ([]*media.MediaStat
 	if err != nil {
 		return nil, fmt.Errorf("Failed to unmarshal status message:%s - %s", err, *message.PayloadUtf8)
 	}
-
+	c.MediaSessionID = response.Status[0].MediaSessionID
+	mergo.Merge(c.currentStatus, response.Status[0], mergo.WithOverride)
 	select {
 	case c.Incoming <- response.Status:
 	default:
@@ -150,10 +153,10 @@ func (c *MediaController) Rewind(timeout time.Duration) (*api.CastMessage, error
 
 //Skip to the end
 func (c *MediaController) Skip(timeout time.Duration) (*api.CastMessage, error) {
-	if c.currentStatus == nil {
+	if c.currentStatus == nil || c.currentStatus.Media.Duration == nil {
 		return nil, errors.New("No media playing, can't skip")
 	}
-	return c.Seek(c.currentStatus.CurrentTime-5, timeout)
+	return c.Seek(*c.currentStatus.Media.Duration-5, timeout)
 }
 
 //Seek to some time in the video

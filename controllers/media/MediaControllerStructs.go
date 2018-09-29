@@ -120,4 +120,5 @@ type MediaStatus struct {
 	Volume                 *Volume                `json:"volume,omitempty"`
 	CustomData             map[string]interface{} `json:"customData"`
 	IdleReason             string                 `json:"idleReason"`
+	Media                  MediaData              `json:"media,omitempty"`
 }
