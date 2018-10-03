@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/controllers/youtube"
@@ -91,31 +92,30 @@ func (c *YoutubeController) RemoveFromQueue(videoID string) {
 }
 
 func (c *YoutubeController) ensureSessionActive() bool {
-	if c.screenID == nil || c.session == nil {
-		err := c.updateScreenID()
-		if err != nil {
-			return false
-		}
-		c.updateYoutubeSession()
+	newScreenID, err := c.updateScreenID()
+	if err != nil {
+		log.Print("Failed to get screenID")
+		return false
 	}
+	if c.screenID == newScreenID {
+		return true
+	}
+	c.updateYoutubeSession(newScreenID)
+	c.screenID = newScreenID
 	return true
 }
 
-func (c *YoutubeController) updateScreenID() error {
+func (c *YoutubeController) updateScreenID() (*string, error) {
 	screenID, err := c.getScreenID(time.Second * 5)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	c.screenID = screenID
-	return nil
+	return screenID, nil
 
 }
 
-func (c *YoutubeController) updateYoutubeSession() error {
-	if c.session == nil {
-		c.session = youtube.NewSession(*c.screenID)
-	}
-
+func (c *YoutubeController) updateYoutubeSession(newScreenID *string) error {
+	c.session = youtube.NewSession(*newScreenID)
 	return c.session.StartSession()
 }
 

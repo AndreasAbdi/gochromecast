@@ -75,7 +75,7 @@ func (device *Device) QuitApplication(timeout time.Duration) {
 func (device *Device) PlayYoutubeVideo(videoID string) {
 	appID := configs.YoutubeAppID
 	device.ReceiverController.LaunchApplication(&appID, defaultTimeout, false)
-	device.YoutubeController.PlayVideo(videoID)
+	device.YoutubeController.PlayVideo(videoID, "")
 }
 
 //GetMediaStatus of current media controller

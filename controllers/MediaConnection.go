@@ -23,6 +23,7 @@ type mediaConnection struct {
 	channel              *primitives.Channel
 	connectionController *ConnectionController
 	listeners            []listener
+	sessionID            string
 	sourceID             string //the id for the requesting application.
 }
 
@@ -64,6 +65,7 @@ func (connection *mediaConnection) ensureConnectionActive() error {
 	if err != nil {
 		return err
 	}
+	connection.sessionID = *appSession.SessionID
 	if connection.shouldResetConnection(appSession) {
 		return connection.refreshConnection()
 	}
@@ -87,7 +89,10 @@ func (connection *mediaConnection) getAppSession() (*receiver.ApplicationSession
 }
 
 func (connection *mediaConnection) shouldResetConnection(session *receiver.ApplicationSession) bool {
-	return session == nil || connection.channel == nil
+	if session == nil {
+		return true
+	}
+	return connection.channel == nil || connection.sessionID != *session.SessionID
 }
 
 func (connection *mediaConnection) refreshConnection() error {
