@@ -50,32 +50,39 @@ type youtubeCommand struct {
 	primitives.PayloadHeaders
 }
 
-//TODO : Do something with the list id
 //PlayVideo initializes a new queue and plays the video
-func (c *YoutubeController) PlayVideo(videoID string) {
+func (c *YoutubeController) PlayVideo(videoID string, listID string) {
 	isActive := c.ensureSessionActive()
 	if isActive {
-		c.session.RemoveFromQueue(videoID)
+		c.session.InitializeQueue(videoID, listID)
 	}
 }
 
-//PlayNext adds a video to be played next in the current playlist TODO
+//ClearPlaylist of current videos in the chromecast playlist
+func (c *YoutubeController) ClearPlaylist() {
+	isActive := c.ensureSessionActive()
+	if isActive {
+		c.session.ClearQueue()
+	}
+}
+
+//PlayNext adds a video to be played next in the current playlist
 func (c *YoutubeController) PlayNext(videoID string) {
 	isActive := c.ensureSessionActive()
 	if isActive {
-		c.session.RemoveFromQueue(videoID)
+		c.session.PlayNext(videoID)
 	}
 }
 
-//AddToQueue adds the video to the end of the current playlist TODO
+//AddToQueue adds the video to the end of the current playlist
 func (c *YoutubeController) AddToQueue(videoID string) {
 	isActive := c.ensureSessionActive()
 	if isActive {
-		c.session.RemoveFromQueue(videoID)
+		c.session.AddToQueue(videoID)
 	}
 }
 
-//RemoveFromQueue removes a video from the videoplaylist TODO
+//RemoveFromQueue removes a video from the video playlist
 func (c *YoutubeController) RemoveFromQueue(videoID string) {
 	isActive := c.ensureSessionActive()
 	if isActive {

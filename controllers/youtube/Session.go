@@ -13,6 +13,7 @@ const requestPrefixFormat = "req%d"
 const actionRemoveVideo = "removeVideo"
 const actionInsertVideo = "insertVideo"
 const actionAddVideo = "addVideo"
+const actionClearQueue = "clearPlaylist"
 
 //Session represents a connection to the youtube chromecast api.
 type Session struct {
@@ -44,6 +45,11 @@ func (s *Session) StartSession() error {
 //PlayNext adds a video to be played next in the current playlist
 func (s *Session) PlayNext(videoID string) {
 	s.sendAction(actionInsertVideo, videoID)
+}
+
+//ClearQueue removes all the videos from the current playlist
+func (s *Session) ClearQueue() {
+	s.sendAction(actionClearQueue, "")
 }
 
 //AddToQueue adds the video to the end of the current playlist
