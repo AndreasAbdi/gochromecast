@@ -62,9 +62,7 @@ func createInitializeQueueRequest(params initializeQueueRequestParams) generic.R
 		videoIDKey:      []string{params.VideoID},
 		countKey:        []string{count},
 	}
-	//spew.Dump("body", body)
 	formattedBody := FormatSessionParameters(body, params.SessionRequestCount)
-	//spew.Dump("Formatted body", formattedBody)
 	return generic.RequestComponents{
 		URL:    bindURL,
 		Header: header,

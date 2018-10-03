@@ -3,7 +3,6 @@ package primitives
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/api"
@@ -51,7 +50,6 @@ func (c *Channel) receiveMessage(message *api.CastMessage, headers *PayloadHeade
 	if *message.DestinationId != "*" && headers.RequestID != nil {
 		listener, ok := c.inFlight[*headers.RequestID]
 		if !ok {
-			log.Printf("Warning: Unknown incoming response id: %d to destination:%s", *headers.RequestID, c.DestinationID)
 			return
 		}
 		listener <- message
@@ -60,7 +58,6 @@ func (c *Channel) receiveMessage(message *api.CastMessage, headers *PayloadHeade
 	}
 
 	if headers.Type == "" {
-		log.Printf("Warning: No message type. Don't know what to do. headers:%v message:%v", headers, message)
 		return
 	}
 

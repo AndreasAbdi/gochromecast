@@ -3,7 +3,6 @@ package youtube
 import (
 	"net/url"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/imroc/req"
 )
 
@@ -16,13 +15,11 @@ func getLoungeToken(screenID string) (string, error) {
 		req.Header(defaultHeaders),
 		payload)
 	if err != nil {
-		spew.Dump("Failed to get the lounge ID", err)
 		return "", err
 	}
 	tokenResponse := LoungeTokenResponse{}
 	err = response.ToJSON(&tokenResponse)
 	if err != nil {
-		spew.Dump("Failed to unmarshal the token response")
 		return "", err
 	}
 	return tokenResponse.Screens[0].LoungeToken, nil

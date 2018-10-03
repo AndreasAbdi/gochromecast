@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/imdario/mergo"
@@ -12,7 +11,6 @@ import (
 	"github.com/AndreasAbdi/go-castv2/api"
 	"github.com/AndreasAbdi/go-castv2/controllers/media"
 	"github.com/AndreasAbdi/go-castv2/primitives"
-	"github.com/davecgh/go-spew/spew"
 )
 
 /*
@@ -55,8 +53,6 @@ func NewMediaController(client *primitives.Client, sourceID string, receiverCont
 }
 
 func (c *MediaController) onStatus(message *api.CastMessage) ([]*media.MediaStatus, error) {
-	spew.Dump("[MEDIA] Got media status message", message)
-
 	response := &media.MediaStatusResponse{}
 
 	err := json.Unmarshal([]byte(*message.PayloadUtf8), response)
@@ -69,7 +65,6 @@ func (c *MediaController) onStatus(message *api.CastMessage) ([]*media.MediaStat
 	select {
 	case c.Incoming <- response.Status:
 	default:
-		log.Printf("Incoming media status, but we aren't listening. %v", response)
 	}
 
 	return response.Status, nil
@@ -77,15 +72,10 @@ func (c *MediaController) onStatus(message *api.CastMessage) ([]*media.MediaStat
 
 //GetStatus attempts to request the chromecast return the status of the current media controller channel
 func (c *MediaController) GetStatus(timeout time.Duration) ([]*media.MediaStatus, error) {
-
-	spew.Dump("getting media Status")
-
 	message, err := c.connection.Request(&getMediaStatus, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get media status: %s", err)
 	}
-
-	spew.Dump("got media Status", message)
 
 	return c.onStatus(message)
 }
@@ -106,7 +96,6 @@ func (c *MediaController) Load(url string, contentTypeString string, timeout tim
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send play command: %s", err)
 	}
-	fmt.Printf("There is no error")
 	return nil, nil
 }
 
@@ -166,7 +155,6 @@ func (c *MediaController) Seek(seconds float64, timeout time.Duration) (*api.Cas
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send play command: %s", err)
 	}
-	fmt.Printf("There is no error")
 	return nil, nil
 }
 
@@ -175,7 +163,6 @@ func (c *MediaController) sendCommand(command primitives.PayloadHeaders, timeout
 	if err != nil {
 		return nil, fmt.Errorf("Failed to send %v command: %s", command.Type, err)
 	}
-	spew.Dump("%v Command: \n %s", command.Type, message.PayloadUtf8)
 	return message, nil
 }
 

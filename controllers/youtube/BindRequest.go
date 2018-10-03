@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"github.com/AndreasAbdi/go-castv2/generic"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/imroc/req"
 )
 
@@ -63,7 +62,6 @@ func CreateBindRequest(requestID int, loungeToken string) generic.RequestCompone
 //ParseResponse attempts to grab relevant session info from a youtube screen/loungetoken bind request response.
 func ParseResponse(bindResponse *req.Resp) (sessionID string, gSessionID string, err error) {
 	responseString, err := bindResponse.ToString()
-	spew.Dump(responseString)
 	if err != nil {
 		return "", "", err
 	}

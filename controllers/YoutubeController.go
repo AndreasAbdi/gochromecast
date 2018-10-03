@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/controllers/youtube"
-	"github.com/davecgh/go-spew/spew"
 
 	"github.com/AndreasAbdi/go-castv2/api"
 	"github.com/AndreasAbdi/go-castv2/primitives"
@@ -98,7 +97,6 @@ func (c *YoutubeController) ensureSessionActive() bool {
 func (c *YoutubeController) updateScreenID() error {
 	screenID, err := c.getScreenID(time.Second * 5)
 	if err != nil {
-		spew.Dump("Failed to get screen ID")
 		return err
 	}
 	c.screenID = screenID
@@ -115,18 +113,14 @@ func (c *YoutubeController) updateYoutubeSession() error {
 }
 
 func (c *YoutubeController) onStatus(message *api.CastMessage) {
-	spew.Dump("Got youtube status message")
 	response := &youtube.ScreenStatus{}
 	err := json.Unmarshal([]byte(*message.PayloadUtf8), response)
 	if err != nil {
-		spew.Dump("Failed to unmarshal status message:%s - %s", err, *message.PayloadUtf8)
 		return
 	}
 	select {
 	case c.incoming <- &response.Data.ScreenID:
-		spew.Dump("Delivered status. %v", response)
 	case <-time.After(time.Second):
-		spew.Dump("Incoming youtube status, but we aren't listening. %v", response)
 	}
 }
 
@@ -135,7 +129,6 @@ func (c *YoutubeController) getScreenID(timeout time.Duration) (*string, error) 
 	waitCh := make(chan bool)
 	var screenID *string
 	go func() {
-		//spew.Dump("Listening for incoming youtube status")
 		screenID = <-c.incoming
 		waitCh <- true
 	}()

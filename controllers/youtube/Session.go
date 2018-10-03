@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/AndreasAbdi/go-castv2/generic"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/imroc/req"
 )
 
@@ -37,7 +36,6 @@ func NewSession(screenID string) *Session {
 func (s *Session) StartSession() error {
 	err := s.setLoungeID(s.screenID)
 	if err != nil {
-		spew.Dump("Failed to get lounge token")
 		return err
 	}
 	return s.bindAndSetVars(s.screenID, *s.loungeID)
@@ -62,15 +60,12 @@ func (s *Session) RemoveFromQueue(videoID string) {
 func (s *Session) sendAction(actionType string, videoID string) {
 	err := s.ensureSessionActive()
 	if err != nil {
-		spew.Dump("Failed to send action", err)
+		return
 	}
-
 	actionParams := s.createActionRequestParameters(actionType, videoID)
 	request := createActionRequest(actionParams)
-	//spew.Dump("[YOUTUBE] Sending action", request)
 	response, err := request.Post()
 	if err != nil {
-		spew.Dump("[YOUTUBE] Failed to send action", err)
 		return
 	}
 	s.handleBadResponse(response)
@@ -80,10 +75,8 @@ func (s *Session) sendAction(actionType string, videoID string) {
 func (s *Session) InitializeQueue(videoID string, listID string) {
 	requestParams := s.createInitializeQueueRequestParameters(videoID, listID)
 	request := createInitializeQueueRequest(requestParams)
-	//spew.Dump("[YOUTUBE] Sending Initialize Queue", request)
 	response, err := request.Post()
 	if err != nil {
-		spew.Dump("[YOUTUBE] Failed to initialize queue:", err)
 		return
 	}
 	s.handleBadResponse(response)
@@ -148,7 +141,6 @@ func (s *Session) createInitializeQueueRequestParameters(videoID string, listID 
 func (s *Session) setLoungeID(screenID string) error {
 	loungeToken, err := getLoungeToken(screenID)
 	if err != nil {
-		spew.Dump("Failed to get lounge token")
 		return err
 	}
 	s.loungeID = &loungeToken

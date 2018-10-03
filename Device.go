@@ -1,14 +1,14 @@
 package castv2
 
 import (
-	"log"
 	"net"
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/configs"
 	"github.com/AndreasAbdi/go-castv2/controllers"
+	"github.com/AndreasAbdi/go-castv2/controllers/media"
+	"github.com/AndreasAbdi/go-castv2/controllers/receiver"
 	"github.com/AndreasAbdi/go-castv2/primitives"
-	"github.com/davecgh/go-spew/spew"
 )
 
 const defaultTimeout = time.Second * 10
@@ -29,7 +29,6 @@ func NewDevice(host net.IP, port int) (Device, error) {
 
 	client, err := primitives.NewClient(host, port)
 	if err != nil {
-		log.Fatalf("Failed to connect to chromecast %s", host)
 		return device, err
 	}
 	device.client = client
@@ -60,10 +59,11 @@ func (device *Device) PlayMedia(URL string, MIMEType string) {
 	device.MediaController.Load(URL, MIMEType, defaultTimeout)
 }
 
+//QuitApplication that is currently running on the device
 func (device *Device) QuitApplication(timeout time.Duration) {
 	status, err := device.ReceiverController.GetStatus(timeout)
 	if err != nil {
-		spew.Dump("Failed to quit application", err)
+		return
 	}
 	for _, appSessions := range status.Applications {
 		session := appSessions.SessionID
@@ -71,21 +71,28 @@ func (device *Device) QuitApplication(timeout time.Duration) {
 	}
 }
 
-//PlayYoutube launches the youtube app and tries to play the video based on its id.
+//PlayYoutubeVideo launches the youtube app and tries to play the video based on its id.
 func (device *Device) PlayYoutubeVideo(videoID string) {
 	appID := configs.YoutubeAppID
 	device.ReceiverController.LaunchApplication(&appID, defaultTimeout, false)
 	device.YoutubeController.PlayVideo(videoID)
 }
 
-func (device *Device) GetMediaStatus(timeout time.Duration) {
+//GetMediaStatus of current media controller
+func (device *Device) GetMediaStatus(timeout time.Duration) []*media.MediaStatus {
 	response, err := device.MediaController.GetStatus(time.Second * 5)
-	spew.Dump("Status Media response", response, err)
-
+	if err != nil {
+		emptyStatus := make([]*media.MediaStatus, 0)
+		return emptyStatus
+	}
+	return response
 }
 
-func (device *Device) GetStatus(timeout time.Duration) {
+//GetStatus of the device.
+func (device *Device) GetStatus(timeout time.Duration) *receiver.ReceiverStatus {
 	response, err := device.ReceiverController.GetStatus(time.Second * 5)
-	spew.Dump("Status response", response, err)
-
+	if err != nil {
+		return nil
+	}
+	return response
 }

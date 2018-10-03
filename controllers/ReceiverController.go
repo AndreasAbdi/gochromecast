@@ -3,13 +3,11 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/api"
 	"github.com/AndreasAbdi/go-castv2/controllers/receiver"
 	"github.com/AndreasAbdi/go-castv2/primitives"
-	"github.com/davecgh/go-spew/spew"
 )
 
 //ReceiverController is a chromecast controller for the receiver namespace. This involves
@@ -32,22 +30,17 @@ func NewReceiverController(client *primitives.Client, sourceID, destinationID st
 }
 
 func (c *ReceiverController) onStatus(message *api.CastMessage) {
-	spew.Dump("Got status message", message)
-
 	response := &receiver.StatusResponse{}
 
 	err := json.Unmarshal([]byte(*message.PayloadUtf8), response)
 
 	if err != nil {
-		log.Printf("Failed to unmarshal status message:%s - %s", err, *message.PayloadUtf8)
 		return
 	}
 
 	select {
 	case c.Incoming <- response.Status:
-		log.Printf("Delivered status")
 	case <-time.After(time.Second):
-		log.Printf("Incoming status, but we aren't listening. %v", response.Status)
 	}
 
 }
@@ -86,7 +79,6 @@ func (c *ReceiverController) LaunchApplication(appID *string, timeout time.Durat
 //TODO: so application termination requires sessionID, need to figure out how to rewrite code to work with that.
 //Actually, you know what? we could do it so that there is a wrapper that sends requests to these thingies.
 func (c *ReceiverController) StopApplication(sessionID *string, timeout time.Duration) {
-	log.Println("Attempting to stop the current application")
 	c.channel.Request(&receiver.StopRequest{
 		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventStop},
 		SessionID:      sessionID,

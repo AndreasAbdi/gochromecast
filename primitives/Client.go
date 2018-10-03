@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 
 	"github.com/AndreasAbdi/go-castv2/api"
@@ -20,9 +19,6 @@ type Client struct {
 
 //NewClient is a constructor for a Client object. Host and Port are for the chromecast's network info.
 func NewClient(host net.IP, port int) (*Client, error) {
-
-	log.Printf("connecting to %s:%d ...", host, port)
-
 	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", host, port), &tls.Config{
 		InsecureSkipVerify: true,
 	})
@@ -46,7 +42,7 @@ func NewClient(host net.IP, port int) (*Client, error) {
 			message := &api.CastMessage{}
 			err = proto.Unmarshal(*packet, message)
 			if err != nil {
-				log.Fatalf("Failed to unmarshal CastMessage: %s", err)
+				continue
 			}
 
 			var headers PayloadHeaders
@@ -54,7 +50,7 @@ func NewClient(host net.IP, port int) (*Client, error) {
 			err := json.Unmarshal([]byte(*message.PayloadUtf8), &headers)
 
 			if err != nil {
-				log.Fatalf("Failed to unmarshal message: %s", err)
+				continue
 			}
 
 			for _, channel := range client.channels {
