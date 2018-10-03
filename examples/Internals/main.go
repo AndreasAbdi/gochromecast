@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"strings"
@@ -35,7 +34,8 @@ func main() {
 			client, err := primitives.NewClient(entry.Addr, entry.Port)
 
 			if err != nil {
-				log.Fatalf("Failed to connect to chromecast %s", entry.Addr)
+				return
+				//log.Fatalf("Failed to connect to chromecast %s", entry.Addr)
 			}
 
 			//_ = controllers.NewHeartbeatController(client, "Tr@n$p0rt-0", "Tr@n$p0rt-0")
