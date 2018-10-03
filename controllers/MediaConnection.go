@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/AndreasAbdi/go-castv2/controllers/receiver"
@@ -56,6 +58,9 @@ func (connection *mediaConnection) Request(payload primitives.HasRequestID, time
 	if err != nil {
 		return nil, err
 	}
+	if connection.channel == nil {
+		fmt.Print("Wtf why is it null?")
+	}
 	return connection.channel.Request(payload, timeout)
 }
 
@@ -92,14 +97,16 @@ func (connection *mediaConnection) shouldResetConnection(session *receiver.Appli
 }
 
 func (connection *mediaConnection) refreshConnection() error {
+	fmt.Println("refreshing connection")
 	connection.performCleanup()
 	session, err := connection.getAppSession()
 	if err != nil {
 		return err
 	}
 	if session == nil {
-		return nil
+		return errors.New("Failed to generate a connection")
 	}
+	fmt.Println("setting up connection")
 	connection.setup(*session.TransportId)
 	return nil
 }
@@ -112,7 +119,9 @@ func (connection *mediaConnection) performCleanup() {
 }
 
 func (connection *mediaConnection) setup(transportID string) {
+	fmt.Println("setting up controller")
 	connection.connectionController = setupConnectionController(connection.client, connection.sourceID, transportID)
+	fmt.Println("setting up channel")
 	connection.channel = setupChannel(connection.client, connection.channel, connection.sourceID, transportID, connection.namespace, connection.listeners)
 }
 

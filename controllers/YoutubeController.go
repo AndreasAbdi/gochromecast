@@ -54,36 +54,45 @@ type youtubeCommand struct {
 //TODO : Do something with the list id
 //PlayVideo initializes a new queue and plays the video
 func (c *YoutubeController) PlayVideo(videoID string) {
-	c.ensureSessionActive()
-	c.session.InitializeQueue(videoID, "")
+	isActive := c.ensureSessionActive()
+	if isActive {
+		c.session.RemoveFromQueue(videoID)
+	}
 }
 
 //PlayNext adds a video to be played next in the current playlist TODO
 func (c *YoutubeController) PlayNext(videoID string) {
-	c.ensureSessionActive()
-	c.session.PlayNext(videoID)
+	isActive := c.ensureSessionActive()
+	if isActive {
+		c.session.RemoveFromQueue(videoID)
+	}
 }
 
 //AddToQueue adds the video to the end of the current playlist TODO
 func (c *YoutubeController) AddToQueue(videoID string) {
-	c.ensureSessionActive()
-	c.session.AddToQueue(videoID)
+	isActive := c.ensureSessionActive()
+	if isActive {
+		c.session.RemoveFromQueue(videoID)
+	}
 }
 
 //RemoveFromQueue removes a video from the videoplaylist TODO
 func (c *YoutubeController) RemoveFromQueue(videoID string) {
-	c.ensureSessionActive()
-	c.session.RemoveFromQueue(videoID)
+	isActive := c.ensureSessionActive()
+	if isActive {
+		c.session.RemoveFromQueue(videoID)
+	}
 }
 
-func (c *YoutubeController) ensureSessionActive() {
+func (c *YoutubeController) ensureSessionActive() bool {
 	if c.screenID == nil || c.session == nil {
 		err := c.updateScreenID()
 		if err != nil {
-			return
+			return false
 		}
 		c.updateYoutubeSession()
 	}
+	return true
 }
 
 func (c *YoutubeController) updateScreenID() error {
