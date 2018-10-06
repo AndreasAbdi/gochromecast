@@ -52,11 +52,13 @@ type youtubeCommand struct {
 }
 
 //PlayVideo initializes a new queue and plays the video
-func (c *YoutubeController) PlayVideo(videoID string, listID string) {
+func (c *YoutubeController) PlayVideo(videoID string, listID string) error {
 	isActive := c.ensureSessionActive()
 	if isActive {
 		c.session.InitializeQueue(videoID, listID)
+		return nil
 	}
+	return InitializationError{}
 }
 
 //ClearPlaylist of current videos in the chromecast playlist
