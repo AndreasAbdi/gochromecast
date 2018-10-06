@@ -136,7 +136,6 @@ func (c *MediaController) Previous(timeout time.Duration) (*api.CastMessage, err
 
 //Rewind to the beginning.
 func (c *MediaController) Rewind(timeout time.Duration) (*api.CastMessage, error) {
-	//
 	return c.Seek(0, timeout)
 }
 
@@ -153,7 +152,7 @@ func (c *MediaController) Seek(seconds float64, timeout time.Duration) (*api.Cas
 	seekCommand := media.CreateSeekCommand(seconds)
 	_, err := c.connection.Request(&seekCommand, timeout)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to send play command: %s", err)
+		return nil, fmt.Errorf("Failed to send seek command: %s", err)
 	}
 	return nil, nil
 }
@@ -199,10 +198,16 @@ func (c *MediaController) constructMediaData(url string, contentTypeString strin
 }
 
 func (c *MediaController) sendMessage(payload primitives.PayloadHeaders, timeout time.Duration) (*api.CastMessage, error) {
-	c.updateForNewSession(timeout)
-	return c.connection.Request(&media.MediaCommand{
+	fastRequest, err := c.connection.Request(&media.MediaCommand{
 		PayloadHeaders: payload,
-		MediaSessionID: c.MediaSessionID}, timeout)
+		MediaSessionID: c.MediaSessionID}, 1)
+	if err != nil {
+		c.updateForNewSession(timeout)
+		return c.connection.Request(&media.MediaCommand{
+			PayloadHeaders: payload,
+			MediaSessionID: c.MediaSessionID}, timeout)
+	}
+	return fastRequest, err
 }
 
 //UpdateForNewSession refreshes the media controller for a new media session that's been executed.

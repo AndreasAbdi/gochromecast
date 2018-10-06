@@ -78,14 +78,15 @@ func (s *Session) sendAction(actionType string, videoID string) {
 }
 
 //InitializeQueue restarts the playlist to something else.
-func (s *Session) InitializeQueue(videoID string, listID string) {
+func (s *Session) InitializeQueue(videoID string, listID string) error {
 	requestParams := s.createInitializeQueueRequestParameters(videoID, listID)
 	request := createInitializeQueueRequest(requestParams)
 	response, err := request.Post()
 	if err != nil {
-		return
+		return err
 	}
 	s.handleBadResponse(response)
+	return nil
 }
 
 func (s *Session) bindAndSetVars(screenID string, loungeID string) error {

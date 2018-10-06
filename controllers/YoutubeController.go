@@ -53,6 +53,11 @@ type youtubeCommand struct {
 
 //PlayVideo initializes a new queue and plays the video
 func (c *YoutubeController) PlayVideo(videoID string, listID string) error {
+	err := c.session.InitializeQueue(videoID, listID)
+	if err == nil {
+		return nil
+	}
+
 	isActive := c.ensureSessionActive()
 	if isActive {
 		c.session.InitializeQueue(videoID, listID)
@@ -63,33 +68,44 @@ func (c *YoutubeController) PlayVideo(videoID string, listID string) error {
 
 //ClearPlaylist of current videos in the chromecast playlist
 func (c *YoutubeController) ClearPlaylist() {
-	isActive := c.ensureSessionActive()
-	if isActive {
+	c.runFast(func() error {
 		c.session.ClearQueue()
-	}
+		return nil
+	})
 }
 
 //PlayNext adds a video to be played next in the current playlist
 func (c *YoutubeController) PlayNext(videoID string) {
-	isActive := c.ensureSessionActive()
-	if isActive {
+	c.runFast(func() error {
 		c.session.PlayNext(videoID)
-	}
+		return nil
+	})
 }
 
 //AddToQueue adds the video to the end of the current playlist
 func (c *YoutubeController) AddToQueue(videoID string) {
-	isActive := c.ensureSessionActive()
-	if isActive {
+	c.runFast(func() error {
 		c.session.AddToQueue(videoID)
-	}
+		return nil
+	})
 }
 
 //RemoveFromQueue removes a video from the video playlist
 func (c *YoutubeController) RemoveFromQueue(videoID string) {
+	c.runFast(func() error {
+		c.session.RemoveFromQueue(videoID)
+		return nil
+	})
+}
+
+func (c *YoutubeController) runFast(command func() error) {
+	err := command()
+	if err == nil {
+		return
+	}
 	isActive := c.ensureSessionActive()
 	if isActive {
-		c.session.RemoveFromQueue(videoID)
+		command()
 	}
 }
 
