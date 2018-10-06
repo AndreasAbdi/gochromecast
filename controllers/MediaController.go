@@ -198,16 +198,15 @@ func (c *MediaController) constructMediaData(url string, contentTypeString strin
 }
 
 func (c *MediaController) sendMessage(payload primitives.PayloadHeaders, timeout time.Duration) (*api.CastMessage, error) {
-	fastRequest, err := c.connection.Request(&media.MediaCommand{
+	//perform the request quickly.
+	c.connection.Request(&media.MediaCommand{
 		PayloadHeaders: payload,
 		MediaSessionID: c.MediaSessionID}, 1)
-	if err != nil {
-		c.updateForNewSession(timeout)
-		return c.connection.Request(&media.MediaCommand{
-			PayloadHeaders: payload,
-			MediaSessionID: c.MediaSessionID}, timeout)
-	}
-	return fastRequest, err
+	//update and then perform the request.
+	c.updateForNewSession(timeout)
+	return c.connection.Request(&media.MediaCommand{
+		PayloadHeaders: payload,
+		MediaSessionID: c.MediaSessionID}, timeout)
 }
 
 //UpdateForNewSession refreshes the media controller for a new media session that's been executed.
