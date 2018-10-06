@@ -41,6 +41,7 @@ func NewYoutubeController(client *primitives.Client, sourceID string, receiver *
 	connection := NewMediaConnection(client, receiver, youtubeControllerNamespace, sourceID)
 	controller := YoutubeController{
 		connection: connection,
+		session:    youtube.NewSession("0"), //dummy session
 		incoming:   make(chan *string, 0),
 	}
 	connection.OnMessage(responseTypeSessionStatus, controller.onStatus)
@@ -53,9 +54,11 @@ type youtubeCommand struct {
 
 //PlayVideo initializes a new queue and plays the video
 func (c *YoutubeController) PlayVideo(videoID string, listID string) error {
-	err := c.session.InitializeQueue(videoID, listID)
-	if err == nil {
-		return nil
+	if c.session.IsInitialized() {
+		err := c.session.InitializeQueue(videoID, listID)
+		if err == nil {
+			return nil
+		}
 	}
 
 	isActive := c.ensureSessionActive()

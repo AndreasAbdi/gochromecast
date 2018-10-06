@@ -17,6 +17,7 @@ const actionClearQueue = "clearPlaylist"
 
 //Session represents a connection to the youtube chromecast api.
 type Session struct {
+	initialized    bool
 	screenID       string
 	sessionID      *string
 	gSessionID     *string
@@ -31,6 +32,11 @@ func NewSession(screenID string) *Session {
 		screenID: screenID,
 	}
 	return &session
+}
+
+//IsInitialized is used to check if the session has initialized or not
+func (s *Session) IsInitialized() bool {
+	return s.initialized
 }
 
 //StartSession initializes the session.
@@ -79,6 +85,10 @@ func (s *Session) sendAction(actionType string, videoID string) {
 
 //InitializeQueue restarts the playlist to something else.
 func (s *Session) InitializeQueue(videoID string, listID string) error {
+	err := s.ensureSessionActive()
+	if err != nil {
+		return err
+	}
 	requestParams := s.createInitializeQueueRequestParameters(videoID, listID)
 	request := createInitializeQueueRequest(requestParams)
 	response, err := request.Post()
@@ -96,6 +106,7 @@ func (s *Session) bindAndSetVars(screenID string, loungeID string) error {
 	}
 
 	s.assignVariables(screenID, loungeID, sessionID, gSessionID)
+	s.initialized = true
 	return nil
 }
 
@@ -155,7 +166,7 @@ func (s *Session) setLoungeID(screenID string) error {
 }
 
 func (s *Session) ensureSessionActive() error {
-	if s.inSession() {
+	if !s.inSession() {
 		return s.StartSession()
 	}
 	return s.bindAndSetVars(s.screenID, *s.loungeID)
@@ -166,6 +177,7 @@ func (s *Session) inSession() bool {
 	return s.loungeID != nil && s.gSessionID != nil
 }
 
+//Response obtained but they were not happy with the request.
 func (s *Session) handleBadResponse(response *req.Resp) {
 	resp := response.Response()
 	if resp == nil {
