@@ -78,6 +78,7 @@ func (connection *mediaConnection) getAppSession() (*receiver.ApplicationSession
 	go func() {
 		status := <-connection.receiverController.Incoming
 		session = status.GetSessionByNamespace(connection.namespace)
+
 		getStatusCh <- true
 	}()
 	_, err := connection.receiverController.GetStatus(defaultTimeout)
@@ -85,6 +86,9 @@ func (connection *mediaConnection) getAppSession() (*receiver.ApplicationSession
 		return nil, err
 	}
 	<-getStatusCh
+	if session == nil {
+		return nil, errors.New("No session by that name")
+	}
 	return session, nil
 }
 
