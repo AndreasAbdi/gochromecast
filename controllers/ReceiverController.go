@@ -14,14 +14,14 @@ import (
 type ReceiverController struct {
 	interval time.Duration
 	channel  *primitives.Channel
-	Incoming chan *receiver.ReceiverStatus
+	Incoming chan *receiver.Status
 }
 
 //NewReceiverController is for building a new receiver controller
 func NewReceiverController(client *primitives.Client, sourceID, destinationID string) *ReceiverController {
 	controller := &ReceiverController{
 		channel:  client.NewChannel(sourceID, destinationID, receiverControllerNamespace),
-		Incoming: make(chan *receiver.ReceiverStatus, 0),
+		Incoming: make(chan *receiver.Status, 0),
 	}
 
 	controller.channel.OnMessage(receiverControllerSystemEventReceiverStatus, controller.onStatus)
@@ -46,7 +46,7 @@ func (c *ReceiverController) onStatus(message *api.CastMessage) {
 }
 
 //GetStatus attempts to receive the current status of the controllers chromecast device.
-func (c *ReceiverController) GetStatus(timeout time.Duration) (*receiver.ReceiverStatus, error) {
+func (c *ReceiverController) GetStatus(timeout time.Duration) (*receiver.Status, error) {
 	message, err := c.channel.Request(&primitives.PayloadHeaders{Type: receiverControllerSystemEventGetStatus}, timeout)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get receiver status: %s", err)
@@ -87,7 +87,7 @@ func (c *ReceiverController) StopApplication(sessionID *string, timeout time.Dur
 
 //SetVolume sets the volume on the controller's chromecast.
 func (c *ReceiverController) SetVolume(volume *receiver.Volume, timeout time.Duration) (*api.CastMessage, error) {
-	return c.channel.Request(&receiver.ReceiverStatus{
+	return c.channel.Request(&receiver.Status{
 		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventSetVolume},
 		Volume:         volume,
 	}, timeout)

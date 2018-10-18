@@ -108,7 +108,7 @@ func (connection *mediaConnection) refreshConnection() error {
 	if session == nil {
 		return errors.New("Failed to generate a connection")
 	}
-	connection.setup(*session.TransportId)
+	connection.setup(*session.TransportID)
 	return nil
 }
 

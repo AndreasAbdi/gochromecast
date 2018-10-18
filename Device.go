@@ -89,7 +89,7 @@ func (device *Device) GetMediaStatus(timeout time.Duration) []*media.MediaStatus
 }
 
 //GetStatus of the device.
-func (device *Device) GetStatus(timeout time.Duration) *receiver.ReceiverStatus {
+func (device *Device) GetStatus(timeout time.Duration) *receiver.Status {
 	response, err := device.ReceiverController.GetStatus(time.Second * 5)
 	if err != nil {
 		return nil
