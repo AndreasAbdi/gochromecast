@@ -9,13 +9,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AndreasAbdi/go-castv2/controllers"
-	"github.com/AndreasAbdi/go-castv2/primitives"
+	"github.com/AndreasAbdi/gochromecast/controllers"
+	"github.com/AndreasAbdi/gochromecast/primitives"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/mdns"
 )
 
 // A simple example, showing how to find a Chromecast using mdns, and request its status.
+// This is for the internal logic on how the application works.
 func main() {
 
 	castService := "_googlecast._tcp"
