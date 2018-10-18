@@ -3,7 +3,7 @@
 
 [![GoDoc](https://godoc.org/github.com/AndreasAbdi/gochromecast?status.png)](http://godoc.org/github.com/AndreasAbdi/gochromecast)
 [![Go Report Card](https://goreportcard.com/badge/github.com/AndreasAbdi/gochromecast)](https://goreportcard.com/report/github.com/AndreasAbdi/gochromecast)
-[![Build Status](https://travis-ci.org/AndreasAbdi/gochromecast.svg?branch=master)](https://travis-ci.org/AndreasAbdi/alexa-local-server)
+[![Build Status](https://travis-ci.org/AndreasAbdi/gochromecast.svg?branch=master)](https://travis-ci.org/AndreasAbdi/gochromecast)
 
 ## Description
 
