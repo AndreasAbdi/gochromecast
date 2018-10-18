@@ -3,8 +3,8 @@ package controllers
 import (
 	"time"
 
-	"github.com/AndreasAbdi/gochromecast/primitives"
 	"github.com/AndreasAbdi/gochromecast/api"
+	"github.com/AndreasAbdi/gochromecast/primitives"
 )
 
 //Sends pings and wait for pongs - https://github.com/thibauts/node-castv2-client/blob/master/lib/controllers/heartbeat.js
