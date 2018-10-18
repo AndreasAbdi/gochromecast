@@ -11,7 +11,7 @@ Library for using chromecast. Contains partial implementations for media player 
 
 ## Usage
 
-To install the library, run 
+To install the library, run
 `go get github.com/AndreasAbdi/gochromecast`
 
 ## Examples
@@ -44,6 +44,6 @@ For more examples of how to use it, see the [examples folder](https://github.com
 References listed in docs.
 Ported from
 
-- [node-castv2](https://github.com/thibauts/node-castv2) 
+- [node-castv2](https://github.com/thibauts/node-castv2)
 - [node-castv2-client](https://github.com/thibauts/node-castv2-client)
 - [go-castv2](https://github.com/ninjasphere/go-castv2)
