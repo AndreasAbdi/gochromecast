@@ -16,7 +16,7 @@ Controls that are supported by the media controller include
 - seek
 - load video/image/song
 
-The media controller is also in charge of running these media control commands for other applications (youtube, netflix, spotify), so you can use this controller for those use cases as well. 
+The media controller is also in charge of running these media control commands for other applications (youtube, netflix, spotify), so you can use this controller for those use cases as well.
 
 Launching the actual generic media application is run by the receiver controller. So if you want to watch a video, you'd launch the application via the receiver controller, then you'd run a load command via the media controller. Interestingly enough, subtitle controls are supposed to be via receiver controller.
 
