@@ -9,7 +9,7 @@ After deliberation, this should probably contain configs that are separate from 
 */
 
 const receiverControllerNamespace string = "urn:x-cast:com.google.cast.receiver"
-const MediaControllerNamespace string = "urn:x-cast:com.google.cast.media"
+const mediaControllerNamespace string = "urn:x-cast:com.google.cast.media"
 const heartbeatControllerNamespace string = "urn:x-cast:com.google.cast.tp.heartbeat"
 const connectionControllerNamespace string = "urn:x-cast:com.google.cast.tp.connection"
 const dashcastControllerNamespace string = "urn:x-cast:com.madmod.dashcast"
@@ -21,10 +21,10 @@ const receiverControllerSystemEventSetVolume string = "SET_VOLUME"
 const receiverControllerSystemEventReceiverStatus string = "RECEIVER_STATUS"
 const receiverControllerSystemEventLaunch string = "LAUNCH"
 const receiverControllerSystemEventStop string = "STOP"
-const receiverControllerSystemEventLaunchError string = "LAUNCH_ERROR"
+const receiverControllerSystemEventLaunchError string = "LAUNCH"
 
-const SystemEventPing string = "PING"
-const SystemEventPong string = "PONG"
+const systemEventPing string = "PING"
+const systemEventPong string = "PONG"
 
 const eventTypeLoad string = "LOAD"
 

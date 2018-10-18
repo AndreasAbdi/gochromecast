@@ -76,8 +76,7 @@ func (c *ReceiverController) LaunchApplication(appID *string, timeout time.Durat
 	}, timeout)
 }
 
-//TODO: so application termination requires sessionID, need to figure out how to rewrite code to work with that.
-//Actually, you know what? we could do it so that there is a wrapper that sends requests to these thingies.
+//StopApplication stops an application from running.
 func (c *ReceiverController) StopApplication(sessionID *string, timeout time.Duration) {
 	c.channel.Request(&receiver.StopRequest{
 		PayloadHeaders: primitives.PayloadHeaders{Type: receiverControllerSystemEventStop},

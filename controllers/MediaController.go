@@ -40,7 +40,7 @@ const skipTimeBuffer = -5
 
 //NewMediaController is the constructors for the media controller
 func NewMediaController(client *primitives.Client, sourceID string, receiverController *ReceiverController) *MediaController {
-	mediaConnection := NewMediaConnection(client, receiverController, MediaControllerNamespace, sourceID)
+	mediaConnection := NewMediaConnection(client, receiverController, mediaControllerNamespace, sourceID)
 	controller := &MediaController{
 		Incoming:   make(chan []*media.MediaStatus, 0),
 		connection: mediaConnection,
@@ -80,7 +80,6 @@ func (c *MediaController) GetStatus(timeout time.Duration) ([]*media.MediaStatus
 	return c.onStatus(message)
 }
 
-//TODO
 //Load sends a load request to play a generic media event
 func (c *MediaController) Load(url string, contentTypeString string, timeout time.Duration) (*api.CastMessage, error) {
 	//TODO should do something about messaging with the contenttype, so it works with different media types. so we can attach more metadata
@@ -166,12 +165,14 @@ func (c *MediaController) sendCommand(command primitives.PayloadHeaders, timeout
 }
 
 //TODO
+
 //EnableSubtitles sends the enable subtitles command to the chromecast
 func (c *MediaController) EnableSubtitles(timeout time.Duration) (*api.CastMessage, error) {
 	return nil, nil
 }
 
 //TODO
+
 //DisableSubtitles sends the disable subtitles command to the chromecast
 func (c *MediaController) DisableSubtitles(timeout time.Duration) (*api.CastMessage, error) {
 	return nil, nil

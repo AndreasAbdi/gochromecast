@@ -25,6 +25,7 @@ type channelListener struct {
 	callback     func(*api.CastMessage)
 }
 
+//HasRequestID is a generic type describing any form of request to a channel. All requests need to have a request id.
 type HasRequestID interface {
 	setRequestID(id int)
 	getRequestID() int

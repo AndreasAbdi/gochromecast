@@ -20,15 +20,15 @@ type HeartbeatController struct {
 	pongChannel chan *api.CastMessage
 }
 
-var ping = primitives.PayloadHeaders{Type: SystemEventPing}
-var pong = primitives.PayloadHeaders{Type: SystemEventPong}
+var ping = primitives.PayloadHeaders{Type: systemEventPing}
+var pong = primitives.PayloadHeaders{Type: systemEventPong}
 
 //NewHeartbeatController is a constructor for a heartbeat controller.
 func NewHeartbeatController(client *primitives.Client, sourceID, destinationID string) *HeartbeatController {
 	controller := &HeartbeatController{
 		channel: client.NewChannel(sourceID, destinationID, heartbeatControllerNamespace),
 	}
-	controller.channel.OnMessage(SystemEventPing, controller.onPing)
+	controller.channel.OnMessage(systemEventPing, controller.onPing)
 
 	return controller
 }
