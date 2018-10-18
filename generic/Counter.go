@@ -37,22 +37,3 @@ type ChCounter struct {
 	Outputs   chan int
 	increment chan bool
 }
-
-func (chC *ChCounter) NewChCounter() {
-	chC.Outputs = make(chan int, 100)
-}
-
-func (chC *ChCounter) initialize() {
-	go func() {
-		for {
-			<-chC.increment
-			chC.value++
-			chC.Outputs <- chC.value
-		}
-
-	}()
-}
-
-func (chC *ChCounter) Increment() {
-	chC.increment <- true
-}
