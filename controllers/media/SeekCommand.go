@@ -1,7 +1,7 @@
 package media
 
 import (
-	"github.com/AndreasAbdi/go-castv2/primitives"
+	"github.com/AndreasAbdi/gochromecast/primitives"
 )
 
 const seekPositionCommandType = "SEEK"

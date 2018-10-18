@@ -1,6 +1,6 @@
 package receiver
 
-import "github.com/AndreasAbdi/go-castv2/primitives"
+import "github.com/AndreasAbdi/gochromecast/primitives"
 
 //TODO: figure out which one of these we need to be public. receiverstatus and application session definitely.
 

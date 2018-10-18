@@ -1,6 +1,6 @@
 package youtube
 
-import "github.com/AndreasAbdi/go-castv2/primitives"
+import "github.com/AndreasAbdi/gochromecast/primitives"
 
 //GetScreenIDRequest for getting a screen ID for an existing youtube application.
 type GetScreenIDRequest struct {

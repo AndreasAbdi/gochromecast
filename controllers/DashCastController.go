@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/AndreasAbdi/go-castv2/controllers/dashcast"
-	"github.com/AndreasAbdi/go-castv2/primitives"
+	"github.com/AndreasAbdi/gochromecast/primitives"
+	"github.com/AndreasAbdi/gochromecast/controllers/dashcast"
 )
 
 /*

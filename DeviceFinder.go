@@ -1,4 +1,4 @@
-package castv2
+package cast
 
 import (
 	"strings"

@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/AndreasAbdi/go-castv2/generic"
+	"github.com/AndreasAbdi/gochromecast/generic"
 	"github.com/imroc/req"
 )
 

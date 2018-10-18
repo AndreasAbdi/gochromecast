@@ -1,14 +1,14 @@
-package castv2
+package cast
 
 import (
 	"net"
 	"time"
 
-	"github.com/AndreasAbdi/go-castv2/configs"
-	"github.com/AndreasAbdi/go-castv2/controllers"
-	"github.com/AndreasAbdi/go-castv2/controllers/media"
-	"github.com/AndreasAbdi/go-castv2/controllers/receiver"
-	"github.com/AndreasAbdi/go-castv2/primitives"
+	"github.com/AndreasAbdi/gochromecast/configs"
+	"github.com/AndreasAbdi/gochromecast/controllers"
+	"github.com/AndreasAbdi/gochromecast/controllers/media"
+	"github.com/AndreasAbdi/gochromecast/controllers/receiver"
+	"github.com/AndreasAbdi/gochromecast/primitives"
 )
 
 const defaultTimeout = time.Second * 10
