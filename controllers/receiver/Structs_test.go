@@ -30,7 +30,7 @@ func constructReceiverStatus(namespaces []string) Status {
 	for _, namespace := range namespaces {
 		sessions = append(sessions, &ApplicationSession{
 			Namespaces: []*Namespace{
-				&Namespace{Name: namespace},
+				{Name: namespace},
 			},
 		})
 	}

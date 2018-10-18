@@ -27,12 +27,12 @@ const bindPairingType = "cast"
 const defaultAppName = "GOCAST_REMOTE_APP"
 
 var bindData = map[string][]string{
-	"device":       []string{defaultDeviceType},
-	"id":           []string{defaultDeviceID},
-	"name":         []string{defaultDeviceID},
-	"mdx-version":  []string{string(3)},
-	"pairing_type": []string{bindPairingType},
-	"app":          []string{defaultAppName},
+	"device":       {defaultDeviceType},
+	"id":           {defaultDeviceID},
+	"name":         {defaultDeviceID},
+	"mdx-version":  {string(3)},
+	"pairing_type": {bindPairingType},
+	"app":          {defaultAppName},
 }
 
 //CreateBindRequest creates a bind request from relevant data.

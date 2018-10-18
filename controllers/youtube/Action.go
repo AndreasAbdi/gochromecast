@@ -39,9 +39,9 @@ func createActionRequest(params actionRequestParameters) generic.RequestComponen
 
 	count := strconv.Itoa(defaultCount)
 	body := map[string][]string{
-		actionKey:  []string{params.ActionID},
-		videoIDKey: []string{params.VideoID},
-		countKey:   []string{count},
+		actionKey:  {params.ActionID},
+		videoIDKey: {params.VideoID},
+		countKey:   {count},
 	}
 	formattedBody := FormatSessionParameters(body, params.SessionRequestCount)
 	return generic.RequestComponents{

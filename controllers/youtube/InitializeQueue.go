@@ -54,13 +54,13 @@ func createInitializeQueueRequest(params initializeQueueRequestParams) generic.R
 	index := strconv.Itoa(defaultIndex)
 	count := strconv.Itoa(defaultCount)
 	body := map[string][]string{
-		listIDKey:       []string{params.ListID},
-		actionKey:       []string{actionSetPlaylist},
-		currentTimeKey:  []string{defaultTime},
-		currentIndexKey: []string{index},
-		audioOnlyKey:    []string{defaultAudioOnlySetting},
-		videoIDKey:      []string{params.VideoID},
-		countKey:        []string{count},
+		listIDKey:       {params.ListID},
+		actionKey:       {actionSetPlaylist},
+		currentTimeKey:  {defaultTime},
+		currentIndexKey: {index},
+		audioOnlyKey:    {defaultAudioOnlySetting},
+		videoIDKey:      {params.VideoID},
+		countKey:        {count},
 	}
 	formattedBody := FormatSessionParameters(body, params.SessionRequestCount)
 	return generic.RequestComponents{
