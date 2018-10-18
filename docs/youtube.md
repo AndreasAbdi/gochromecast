@@ -28,3 +28,5 @@ Commands supported are:
 - add as next video in playlist.
 - add video to back of playlist.
 - remove video from playlist.
+
+See examples folder to find out how to use.
