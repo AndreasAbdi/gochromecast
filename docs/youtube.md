@@ -1,5 +1,7 @@
 # Youtube controller information
 
+## Sample usage
+
 ## References
 
 [PYCHROMECAST](https://github.com/balloob/pychromecast/blob/master/pychromecast/controllers/youtube.py)
